@@ -124,7 +124,7 @@
 
 //     return NextResponse.json(
 //       {
-//         error: "Twitch APIで予期しないエラーが発生しました。",
+//         error: "Twitch APIで予期しないエラーが発生しました。",あ
 //       },
 //       { status: 500 }
 //     );
