@@ -1,408 +1,349 @@
+
 "use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import Sidebar from "../../../components/Sidebar";
 import {
-  FavoriteItem,
+  type FavoriteItem,
   getFavorites,
   removeFavorite,
   migrateLocalFavorites,
 } from "../../lib/favorites";
-
 import {
-  PostItem,
+  type PostItem,
   getPosts,
 } from "../../lib/posts";
-
 import { createClient } from "../../lib/supabase/client";
 
-function getYouTubeVideoId(url: string): string | null {
+function getThumbnail(url: string): string | null {
   try {
-    const parsedUrl = new URL(url);
+    const parsed = new URL(url);
+    let id: string | null = null;
 
     if (
-      parsedUrl.hostname.includes("youtube.com") &&
-      parsedUrl.pathname === "/watch"
+      parsed.hostname === "youtube.com" ||
+      parsed.hostname === "www.youtube.com" ||
+      parsed.hostname === "m.youtube.com"
     ) {
-      return parsedUrl.searchParams.get("v");
+      if (parsed.pathname === "/watch") {
+        id = parsed.searchParams.get("v");
+      } else if (
+        parsed.pathname.startsWith("/shorts/") ||
+        parsed.pathname.startsWith("/embed/")
+      ) {
+        id = parsed.pathname.split("/")[2] || null;
+      }
+    } else if (parsed.hostname === "youtu.be") {
+      id = parsed.pathname.split("/")[1] || null;
     }
 
-    if (parsedUrl.hostname === "youtu.be") {
-      return parsedUrl.pathname.split("/")[1] || null;
-    }
-
-    if (
-      parsedUrl.hostname.includes("youtube.com") &&
-      parsedUrl.pathname.startsWith("/shorts/")
-    ) {
-      return parsedUrl.pathname.split("/")[2] || null;
-    }
-
-    if (
-      parsedUrl.hostname.includes("youtube.com") &&
-      parsedUrl.pathname.startsWith("/embed/")
-    ) {
-      return parsedUrl.pathname.split("/")[2] || null;
-    }
-
-    return null;
+    return id
+      ? `https://i.ytimg.com/vi/${id}/hqdefault.jpg`
+      : null;
   } catch {
     return null;
   }
 }
 
-function getYouTubeThumbnail(url: string): string | null {
-  const videoId = getYouTubeVideoId(url);
-
-  if (!videoId) {
-    return null;
-  }
-
-  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
-}
-
 export default function MyPage() {
   const router = useRouter();
 
-  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [posts, setPosts] = useState<PostItem[]>([]);
-
-  const [userName, setUserName] = useState("");
-  const [userEmail, setUserEmail] = useState("");
-
+  const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [loading, setLoading] = useState(true);
-
-  async function loadFavorites() {
-  const savedFavorites = await getFavorites();
-  setFavorites(savedFavorites);
-}
-
-  async function loadPosts() {
-    const savedPosts = await getPosts();
-    setPosts(savedPosts);
-  }
+  const [activeTab, setActiveTab] = useState<
+    "posts" | "favorites"
+  >("posts");
 
   useEffect(() => {
-    async function loadPage() {
-      const supabase = createClient();
+    let mounted = true;
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      setUserEmail(user.email ?? "");
-
-      const name = user.user_metadata?.name;
-
-      if (typeof name === "string") {
-        setUserName(name);
-      }
-
-      await migrateLocalFavorites();
-      await loadFavorites();
-      await loadPosts();
-
-      setLoading(false);
+    async function loadPosts() {
+      const data = await getPosts();
+      if (mounted) setPosts(data);
     }
 
-    loadPage();
+    async function loadFavorites() {
+      const data = await getFavorites();
+      if (mounted) setFavorites(data);
+    }
 
+    async function initialize() {
+      try {
+        const supabase = createClient();
+        const { data: { user }, error } =
+          await supabase.auth.getUser();
+
+        if (error || !user) {
+          router.replace("/login");
+          return;
+        }
+
+        await migrateLocalFavorites();
+        await Promise.all([
+          loadPosts(),
+          loadFavorites(),
+        ]);
+      } catch (error) {
+        console.error("読み込みエラー:", error);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    }
+
+    void initialize();
+
+    const refreshPosts = () => {
+      void loadPosts();
+    };
+    const refreshFavorites = () => {
+      void loadFavorites();
+    };
+
+    window.addEventListener("posts-updated", refreshPosts);
     window.addEventListener(
       "favorites-updated",
-      loadFavorites
-    );
-
-    window.addEventListener(
-      "posts-updated",
-      loadPosts
+      refreshFavorites
     );
 
     return () => {
-      window.removeEventListener(
-        "favorites-updated",
-        loadFavorites
-      );
-
+      mounted = false;
       window.removeEventListener(
         "posts-updated",
-        loadPosts
+        refreshPosts
+      );
+      window.removeEventListener(
+        "favorites-updated",
+        refreshFavorites
       );
     };
   }, [router]);
 
-  async function deleteFavorite(id: string) {
-  try {
-    await removeFavorite(id);
-    await loadFavorites();
-  } catch (error) {
-    console.error(error);
-
-    if (error instanceof Error) {
-      alert(error.message);
-    } else {
-      alert("お気に入りの削除に失敗しました。");
-    }
-  }
-}
-
-  async function handleLogout() {
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.signOut();
-
-    if (error) {
-      alert("ログアウトに失敗しました。");
+  async function handleRemoveFavorite(id: string) {
+    if (!window.confirm("お気に入りから削除しますか？")) {
       return;
     }
 
-    alert("ログアウトしました。");
-
-    router.push("/login");
-    router.refresh();
+    try {
+      await removeFavorite(id);
+      setFavorites(await getFavorites());
+    } catch (error) {
+      console.error(error);
+      alert("お気に入りの削除に失敗しました。");
+    }
   }
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
-        <p className="text-xl font-extrabold text-slate-700">
-          読み込み中...
-        </p>
+      <main className="flex min-h-screen items-center justify-center">
+        読み込み中...
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen bg-slate-100 p-8">
-      <div className="mx-auto max-w-7xl">
-
-        {/* 上部 */}
-
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+    <div className="min-h-screen bg-slate-50">
+      <header className="border-b bg-white px-6 py-5">
+        <div className="mx-auto flex max-w-[1700px] items-center justify-between">
           <Link
             href="/"
-            className="font-extrabold text-blue-600 hover:underline"
+            className="text-2xl font-extrabold text-blue-600"
           >
-            ← URLinkに戻る
+            URLink
           </Link>
 
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="rounded-xl bg-red-500 px-5 py-3 font-extrabold text-white transition hover:bg-red-600"
+          <Link
+            href="/account"
+            className="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-800 hover:bg-slate-200"
           >
-            ログアウト
-          </button>
+            ⚙️ アカウント
+          </Link>
         </div>
+      </header>
 
-        {/* ユーザー情報 */}
+      <div className="mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
+        <aside className="w-60 shrink-0">
+          <div className="sticky top-6 rounded-2xl bg-white p-4 shadow-sm">
+            <nav className="mb-6 space-y-2">
+  <a
+    href="/"
+    className="block rounded-xl px-4 py-3 font-extrabold text-slate-700 hover:bg-slate-100"
+  >
+    🏠 ホーム
+  </a>
 
-        <section className="mb-12 rounded-3xl bg-white p-8 shadow-md">
-          <div className="flex items-center gap-5">
-
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-blue-600 text-3xl font-extrabold text-white">
-              {userName
-                ? userName.charAt(0).toUpperCase()
-                : "U"}
-            </div>
-
-            <div>
-              <p className="text-sm font-bold text-slate-500">
-                ログイン中
-              </p>
-
-              <h1 className="mt-1 text-3xl font-extrabold text-slate-950">
-                {userName || "URLinkユーザー"}
-              </h1>
-
-              <p className="mt-2 text-slate-600">
-                {userEmail}
-              </p>
-            </div>
-
+  <a
+    href="/mypage"
+    className="block rounded-xl bg-blue-600 px-4 py-3 font-extrabold text-white"
+  >
+    👤 マイページ
+  </a>
+</nav>
           </div>
-        </section>
+        </aside>
 
-        {/* 自分の投稿 */}
+        <main className="min-w-0 flex-1">
+          <h1 className="mb-7 text-3xl font-extrabold text-slate-950">
+            マイページ
+          </h1>
 
-        <section className="mb-14">
+          <div className="mb-8 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => setActiveTab("posts")}
+              className={`rounded-xl px-6 py-3 font-extrabold ${
+                activeTab === "posts"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-slate-700"
+              }`}
+            >
+              📝 自分の投稿 ({posts.length})
+            </button>
 
-          <div className="mb-8 flex items-center gap-3">
-            <h2 className="text-3xl font-extrabold text-slate-900">
-              📝 自分の投稿
-            </h2>
-
-            <span className="rounded-full bg-blue-100 px-3 py-1 font-bold text-blue-800">
-              {posts.length}件
-            </span>
+            <button
+              type="button"
+              onClick={() => setActiveTab("favorites")}
+              className={`rounded-xl px-6 py-3 font-extrabold ${
+                activeTab === "favorites"
+                  ? "bg-blue-600 text-white"
+                  : "bg-white text-slate-700"
+              }`}
+            >
+              ⭐ お気に入り ({favorites.length})
+            </button>
           </div>
 
-          {posts.length === 0 ? (
-            <div className="rounded-2xl bg-white p-10 text-center shadow-md">
-              <p className="text-lg font-bold text-slate-600">
-                まだ投稿がありません。
-              </p>
-
-              <Link
-                href="/post"
-                className="mt-4 inline-block font-extrabold text-green-600 hover:underline"
-              >
-                最初の投稿をする
-              </Link>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-              {posts.map((post) => {
-                const thumbnail =
-                  getYouTubeThumbnail(post.url);
-
-                return (
-                  <article
-                    key={post.id}
-                    className="overflow-hidden rounded-2xl bg-white shadow-md"
+          {activeTab === "posts" && (
+            <section>
+              {posts.length === 0 ? (
+                <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                  <p className="font-bold text-slate-600">
+                    まだ投稿がありません。
+                  </p>
+                  <Link
+                    href="/post"
+                    className="mt-5 inline-block font-bold text-blue-600"
                   >
+                    ＋ 投稿する
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {posts.map((post) => {
+                    const thumbnail = getThumbnail(post.url);
 
-                    <a
-                      href={post.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {thumbnail ? (
-                        <img
-                          src={thumbnail}
-                          alt={post.title}
-                          className="aspect-video w-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex aspect-video w-full items-center justify-center bg-slate-200 px-4 text-center font-bold text-slate-500">
-                          URL投稿
+                    return (
+                      <article
+                        key={post.id}
+                        className="overflow-hidden rounded-2xl bg-white shadow-md"
+                      >
+                        <a
+                          href={post.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {thumbnail ? (
+                            <img
+                              src={thumbnail}
+                              alt={post.title}
+                              className="aspect-video w-full object-cover"
+                            />
+                          ) : (
+                            <div className="flex aspect-video items-center justify-center bg-slate-200 font-bold">
+                              URL投稿
+                            </div>
+                          )}
+                        </a>
+
+                        <div className="p-5">
+                          <h2 className="font-extrabold text-slate-950">
+                            {post.title}
+                          </h2>
+                          <p className="mt-3 text-sm text-slate-600">
+                            {post.category}
+                          </p>
+                          {post.tag && (
+                            <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+                              #{post.tag}
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </a>
+                      </article>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+          )}
 
-                    <div className="p-5">
-
+          {activeTab === "favorites" && (
+            <section>
+              {favorites.length === 0 ? (
+                <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                  <p className="font-bold text-slate-600">
+                    まだお気に入りがありません。
+                  </p>
+                  <Link
+                    href="/"
+                    className="mt-5 inline-block font-bold text-blue-600"
+                  >
+                    動画を探す
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {favorites.map((item) => (
+                    <article
+                      key={item.id}
+                      className="overflow-hidden rounded-2xl bg-white shadow-md"
+                    >
                       <a
-                        href={post.url}
+                        href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
                       >
-                        <h3 className="font-extrabold text-slate-950 hover:text-blue-600">
-                          {post.title}
-                        </h3>
+                        {item.thumbnail ? (
+                          <img
+                            src={item.thumbnail}
+                            alt={item.title}
+                            className="aspect-video w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex aspect-video items-center justify-center bg-slate-200">
+                            動画
+                          </div>
+                        )}
                       </a>
 
-                      <p className="mt-3 font-bold text-slate-600">
-                        {post.category}
-                      </p>
+                      <div className="p-5">
+                        <h2 className="line-clamp-3 font-extrabold">
+                          {item.title}
+                        </h2>
+                        <p className="mt-2 text-sm text-slate-500">
+                          {item.creator}
+                        </p>
 
-                      {post.tag && (
-                        <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-700">
-                          {post.tag}
-                        </span>
-                      )}
-
-                    </div>
-                  </article>
-                );
-              })}
-
-            </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void handleRemoveFavorite(item.id)
+                          }
+                          className="mt-5 w-full rounded-xl bg-red-50 px-4 py-3 font-bold text-red-600 hover:bg-red-100"
+                        >
+                          お気に入りから削除
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
           )}
-
-        </section>
-
-        {/* お気に入り */}
-
-        <section>
-
-          <div className="mb-8 flex items-center gap-3">
-            <h2 className="text-3xl font-extrabold text-slate-900">
-              ⭐ お気に入り
-            </h2>
-
-            <span className="rounded-full bg-yellow-100 px-3 py-1 font-bold text-yellow-800">
-              {favorites.length}件
-            </span>
-          </div>
-
-          {favorites.length === 0 ? (
-            <div className="rounded-2xl bg-white p-10 text-center shadow-md">
-
-              <p className="text-lg font-bold text-slate-600">
-                まだお気に入りがありません。
-              </p>
-
-              <Link
-                href="/"
-                className="mt-4 inline-block font-extrabold text-blue-600 hover:underline"
-              >
-                動画を探す
-              </Link>
-
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-              {favorites.map((item) => (
-                <article
-                  key={item.id}
-                  className="overflow-hidden rounded-2xl bg-white shadow-md"
-                >
-
-                  {item.thumbnail && (
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <img
-                        src={item.thumbnail}
-                        alt={item.title}
-                        className="aspect-video w-full object-cover"
-                      />
-                    </a>
-                  )}
-
-                  <div className="p-4">
-
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      <h3 className="line-clamp-3 font-extrabold text-slate-950 hover:text-blue-600">
-                        {item.title}
-                      </h3>
-                    </a>
-
-                    <button
-                      type="button"
-                      onClick={() =>
-                        deleteFavorite(item.id)
-                      }
-                      className="mt-4 w-full rounded-xl bg-red-50 px-4 py-3 font-extrabold text-red-600 transition hover:bg-red-100"
-                    >
-                      お気に入りから削除
-                    </button>
-
-                  </div>
-                </article>
-              ))}
-
-            </div>
-          )}
-
-        </section>
-
+        </main>
       </div>
-    </main>
+    </div>
   );
 }

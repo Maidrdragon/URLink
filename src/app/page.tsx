@@ -1,6 +1,7 @@
-
-//072021時15分お気に入りボタンを導入したコード0721人気順二書き換えたところ
 "use client";
+
+//0929
+//072021時15分お気に入りボタンを導入したコード
 
 import {
   useCallback,
@@ -11,6 +12,8 @@ import {
 
 import Header, { type SortOrder } from "../../components/Header";
 import FavoriteButton from "../../components/FavoriteButton";
+import Sidebar from "../../components/Sidebar";
+
 //9/18追加分
 import {
   deletePost,
@@ -24,7 +27,6 @@ import {
   type Playlist,
 } from "../lib/playlists";
 //2026-0925作成
-
 
 
 type YouTubeVideo = {
@@ -867,10 +869,11 @@ useEffect(() => {
         className="w-[75vw] max-w-[1300px] select-none opacity-[0.05]"
       />
     </div>
-//0925追加
+      {/* 左側メニュー */}
       <div className="relative z-10 mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
   <aside className="w-60 flex-shrink-0">
     <div className="sticky top-6 rounded-2xl bg-white p-4 shadow-sm">
+      <Sidebar />
       <h2 className="mb-4 text-lg font-extrabold text-slate-950">
         📚 マイリスト
       </h2>

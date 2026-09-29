@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -78,7 +79,6 @@ export default function Header({
         {/* 検索エリア */}
         {onSearch && (
           <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2">
-
             <input
               type="text"
               value={keyword}
@@ -99,11 +99,9 @@ export default function Header({
               <option value="relevance">
                 関連度順
               </option>
-
               <option value="date">
                 新着順
               </option>
-
               <option value="viewCount">
                 再生回数順
               </option>
@@ -116,11 +114,10 @@ export default function Header({
             >
               検索
             </button>
-
           </div>
         )}
 
-        {/* ★ 新しく追加する投稿ボタン */}
+        {/* 投稿ボタン */}
         <Link
           href="/post"
           className="flex-shrink-0 rounded-xl bg-green-500 px-6 py-3 font-extrabold text-white shadow-sm transition hover:bg-green-600"
@@ -128,12 +125,12 @@ export default function Header({
           ＋ 投稿
         </Link>
 
-        {/* マイページ */}
+        {/* アカウント管理 */}
         <Link
-          href="/mypage"
+          href="/account"
           className="flex-shrink-0 rounded-xl bg-slate-900 px-5 py-3 font-extrabold text-white shadow-sm transition hover:bg-slate-700"
         >
-          ⭐ マイページ
+           アカウント
         </Link>
 
       </div>
