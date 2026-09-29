@@ -11,6 +11,21 @@ import {
 
 import Header, { type SortOrder } from "../../components/Header";
 import FavoriteButton from "../../components/FavoriteButton";
+//9/18追加分
+import {
+  deletePost,
+  getPosts,
+  type PostItem,
+} from "../lib/posts";
+
+import {
+  getPlaylistPostIds,
+  getPlaylists,
+  type Playlist,
+} from "../lib/playlists";
+//2026-0925作成
+
+
 
 type YouTubeVideo = {
   id: {
@@ -259,11 +274,138 @@ async function fetchTwitch(
 
   return data;
 }
+function getYouTubeVideoId(url: string): string | null {
+  try {
+    const parsedUrl = new URL(url);
+
+    // 通常URL
+    // https://www.youtube.com/watch?v=XXXXXXXXXXX
+    if (
+      parsedUrl.hostname.includes("youtube.com") &&
+      parsedUrl.pathname === "/watch"
+    ) {
+      return parsedUrl.searchParams.get("v");
+    }
+
+    // 短縮URL
+    // https://youtu.be/XXXXXXXXXXX
+    if (parsedUrl.hostname === "youtu.be") {
+      return parsedUrl.pathname.split("/")[1] || null;
+    }
+
+    // Shorts
+    // https://www.youtube.com/shorts/XXXXXXXXXXX
+    if (
+      parsedUrl.hostname.includes("youtube.com") &&
+      parsedUrl.pathname.startsWith("/shorts/")
+    ) {
+      return parsedUrl.pathname.split("/")[2] || null;
+    }
+
+    // 埋め込みURL
+    // https://www.youtube.com/embed/XXXXXXXXXXX
+    if (
+      parsedUrl.hostname.includes("youtube.com") &&
+      parsedUrl.pathname.startsWith("/embed/")
+    ) {
+      return parsedUrl.pathname.split("/")[2] || null;
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function getYouTubeThumbnail(url: string): string | null {
+  const videoId = getYouTubeVideoId(url);
+
+  if (!videoId) {
+    return null;
+  }
+
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
 
 export default function Home() {
+  const [posts, setPosts] = useState<PostItem[]>([]);
+
+  //0925追加
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+
+const [selectedPlaylistId, setSelectedPlaylistId] =
+  useState<string>("all");
+
+const [playlistPostIds, setPlaylistPostIds] =
+  useState<string[]>([]);
+
   const [feedItems, setFeedItems] = useState<FeedItem[]>(
     []
   );
+
+  useEffect(() => {
+  async function loadPosts() {
+    const savedPosts = await getPosts();
+    setPosts(savedPosts);
+  }
+
+  loadPosts();
+
+  window.addEventListener(
+    "posts-updated",
+    loadPosts
+  );
+
+  return () => {
+    window.removeEventListener(
+      "posts-updated",
+      loadPosts
+    );
+  };
+}, []);
+//*0925追加
+useEffect(() => {
+  async function loadPlaylists() {
+    const savedPlaylists = await getPlaylists();
+    setPlaylists(savedPlaylists);
+  }
+
+  void loadPlaylists();
+
+  function handlePlaylistsUpdated() {
+    void loadPlaylists();
+  }
+
+  window.addEventListener(
+    "playlists-updated",
+    handlePlaylistsUpdated
+  );
+
+  return () => {
+    window.removeEventListener(
+      "playlists-updated",
+      handlePlaylistsUpdated
+    );
+  };
+}, []);
+//0925追加
+useEffect(() => {
+  async function loadPlaylistPosts() {
+    if (selectedPlaylistId === "all") {
+      setPlaylistPostIds([]);
+      return;
+    }
+
+    const postIds =
+      await getPlaylistPostIds(
+        selectedPlaylistId
+      );
+
+    setPlaylistPostIds(postIds);
+  }
+
+  void loadPlaylistPosts();
+}, [selectedPlaylistId]);
 
   const [keywordPageStates, setKeywordPageStates] =
     useState<KeywordPageState[]>([]);
@@ -295,6 +437,32 @@ export default function Home() {
       Boolean(state.youtubeNextPageToken) ||
       Boolean(state.twitchNextCursor)
   );
+  async function handleDeletePost(
+  postId: string
+) {
+  const confirmed = window.confirm(
+    "この投稿を削除しますか？"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    await deletePost(postId);
+  } catch (error) {
+    console.error(
+      "投稿の削除に失敗しました:",
+      error
+    );
+
+    if (error instanceof Error) {
+      alert(error.message);
+    } else {
+      alert("投稿の削除に失敗しました。");
+    }
+  }
+}
 
   async function searchAll(input: string, order: SortOrder) {
     const trimmedInput = input.trim();
@@ -685,10 +853,156 @@ export default function Home() {
   }, [loadMore]);
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <Header onSearch={searchAll} />
+  <div className="relative min-h-screen overflow-hidden bg-slate-50">
+    <Header onSearch={searchAll} />
 
-      <main className="mx-auto max-w-[1500px] px-6 py-8">
+    {/* 背景の巨大URLinkロゴ */}
+    <div
+      className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
+      aria-hidden="true"
+    >
+      <img
+        src="/URLink.png"
+        alt=""
+        className="w-[75vw] max-w-[1300px] select-none opacity-[0.05]"
+      />
+    </div>
+//0925追加
+      <div className="relative z-10 mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
+  <aside className="w-60 flex-shrink-0">
+    <div className="sticky top-6 rounded-2xl bg-white p-4 shadow-sm">
+      <h2 className="mb-4 text-lg font-extrabold text-slate-950">
+        📚 マイリスト
+      </h2>
+
+      <div className="space-y-2">
+        <button
+          type="button"
+          onClick={() => setSelectedPlaylistId("all")}
+          className={`w-full rounded-xl px-4 py-3 text-left font-extrabold transition ${
+            selectedPlaylistId === "all"
+              ? "bg-blue-600 text-white"
+              : "text-slate-700 hover:bg-slate-100"
+          }`}
+        >
+          🏠 すべて
+        </button>
+
+        {playlists.map((playlist) => (
+          <button
+            key={playlist.id}
+            type="button"
+            onClick={() =>
+              setSelectedPlaylistId(playlist.id)
+            }
+            className={`w-full rounded-xl px-4 py-3 text-left font-bold transition ${
+              selectedPlaylistId === playlist.id
+                ? "bg-blue-600 text-white"
+                : "text-slate-700 hover:bg-slate-100"
+            }`}
+          >
+            {playlist.name}
+          </button>
+        ))}
+      </div>
+
+      <a
+        href="/post"
+        className="mt-5 block rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 text-center font-extrabold text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+      >
+        ＋ 新しいタブ
+      </a>
+    </div>
+  </aside>
+
+  <main className="min-w-0 flex-1">
+        {posts.length > 0 && (
+  <section className="mb-10">
+    <div className="mb-6 flex items-center gap-3">
+      <h2 className="text-2xl font-extrabold text-slate-950">
+        新着投稿
+      </h2>
+
+      <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-800">
+        {posts.length}件
+      </span>
+    </div>
+
+    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      {posts
+  .filter((post) => {
+    if (selectedPlaylistId === "all") {
+      return true;
+    }
+
+    return playlistPostIds.includes(post.id);
+  })
+  .map((post) => {
+        const thumbnail = getYouTubeThumbnail(post.url);
+
+        return (
+          <article
+            key={post.id}
+            className="overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+          >
+            <a
+              href={post.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block"
+            >
+              {thumbnail ? (
+                <img
+                  src={thumbnail}
+                  alt={post.title}
+                  className="aspect-video w-full bg-slate-600 object-cover"
+                />
+              ) : (
+                <div className="flex aspect-video items-center justify-center bg-slate-600">
+                  <span className="text-4xl font-extrabold text-white">
+                    URL
+                  </span>
+                </div>
+              )}
+
+              <div className="p-4">
+                <h3 className="line-clamp-3 text-base font-extrabold leading-6 text-slate-950">
+                  {post.title}
+                </h3>
+
+                <p className="mt-3 text-sm font-semibold text-slate-600">
+                  {post.category}
+                </p>
+
+                {post.tag && (
+                  <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+                    #{post.tag}
+                  </span>
+                )}
+
+                <p className="mt-3 break-all text-xs font-semibold text-slate-500">
+                  {post.url}
+                </p>
+                
+              </div>
+            </a>
+            <div className="border-t border-slate-100 p-4">
+              <button
+                type="button"
+                onClick={() => {
+                  void handleDeletePost(post.id);
+                }}
+                className="rounded-lg bg-red-100 px-3 py-2 text-sm font-extrabold text-red-700 transition hover:bg-red-200"
+              >
+                🗑 削除
+              </button>
+            </div>
+          </article>
+        );
+      })}
+    </div>
+  </section>
+)}
         {!searched && !initialLoading && (
           <section className="py-24 text-center">
             <h2 className="text-4xl font-extrabold text-slate-950">
@@ -971,9 +1285,10 @@ export default function Home() {
                   </p>
                 )}
             </div>
-          </section>
+                   </section>
         )}
       </main>
     </div>
-  );
+  </div>
+);
 }

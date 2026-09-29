@@ -1,7 +1,7 @@
-//072021時13分お気に入りボタンの機能
 "use client";
 
 import { useEffect, useState } from "react";
+
 import {
   FavoriteItem,
   isFavorite,
@@ -17,10 +17,17 @@ export default function FavoriteButton({
   item,
 }: FavoriteButtonProps) {
   const [favorite, setFavorite] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    function updateFavoriteState() {
-      setFavorite(isFavorite(item.id));
+    let active = true;
+
+    async function updateFavoriteState() {
+      const result = await isFavorite(item.id);
+
+      if (active) {
+        setFavorite(result);
+      }
     }
 
     updateFavoriteState();
@@ -30,37 +37,47 @@ export default function FavoriteButton({
       updateFavoriteState
     );
 
-    window.addEventListener(
-      "storage",
-      updateFavoriteState
-    );
-
     return () => {
+      active = false;
+
       window.removeEventListener(
         "favorites-updated",
-        updateFavoriteState
-      );
-
-      window.removeEventListener(
-        "storage",
         updateFavoriteState
       );
     };
   }, [item.id]);
 
-  function handleFavorite(
+  async function handleFavorite(
     event: React.MouseEvent<HTMLButtonElement>
   ) {
     // カードのリンクが開かないようにする
     event.preventDefault();
     event.stopPropagation();
 
-    if (favorite) {
-      removeFavorite(item.id);
-      setFavorite(false);
-    } else {
-      saveFavorite(item);
-      setFavorite(true);
+    if (loading) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (favorite) {
+        await removeFavorite(item.id);
+        setFavorite(false);
+      } else {
+        await saveFavorite(item);
+        setFavorite(true);
+      }
+    } catch (error) {
+      console.error(error);
+
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("お気に入りの操作に失敗しました。");
+      }
+    } finally {
+      setLoading(false);
     }
   }
 
@@ -68,7 +85,8 @@ export default function FavoriteButton({
     <button
       type="button"
       onClick={handleFavorite}
-      className={`rounded-lg px-3 py-2 text-sm font-extrabold transition ${
+      disabled={loading}
+      className={`rounded-lg px-3 py-2 text-sm font-extrabold transition disabled:cursor-not-allowed disabled:opacity-50 ${
         favorite
           ? "bg-yellow-400 text-slate-950 hover:bg-yellow-500"
           : "bg-slate-200 text-slate-800 hover:bg-slate-300"
@@ -79,9 +97,11 @@ export default function FavoriteButton({
           : "お気に入りに追加"
       }
     >
-      {favorite
-        ? "★ お気に入り済み"
-        : "☆ お気に入り"}
+      {loading
+        ? "処理中..."
+        : favorite
+          ? "★ お気に入り済み"
+          : "☆ お気に入り"}
     </button>
   );
 }
