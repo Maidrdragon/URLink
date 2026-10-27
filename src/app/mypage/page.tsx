@@ -159,7 +159,7 @@ export default function MyPage() {
             href="/account"
             className="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-800 hover:bg-slate-200"
           >
-            ⚙️ アカウント
+             アカウント
           </Link>
         </div>
       </header>
@@ -172,14 +172,14 @@ export default function MyPage() {
     href="/"
     className="block rounded-xl px-4 py-3 font-extrabold text-slate-700 hover:bg-slate-100"
   >
-    🏠 ホーム
+    ホーム
   </a>
 
   <a
     href="/mypage"
     className="block rounded-xl bg-blue-600 px-4 py-3 font-extrabold text-white"
   >
-    👤 マイページ
+    マイページ
   </a>
 </nav>
           </div>
@@ -200,7 +200,7 @@ export default function MyPage() {
                   : "bg-white text-slate-700"
               }`}
             >
-              📝 自分の投稿 ({posts.length})
+               自分の投稿 ({posts.length})
             </button>
 
             <button
@@ -212,7 +212,7 @@ export default function MyPage() {
                   : "bg-white text-slate-700"
               }`}
             >
-              ⭐ お気に入り ({favorites.length})
+               お気に入り ({favorites.length})
             </button>
           </div>
 

@@ -103,8 +103,8 @@ const newPost = await addPost({
   title: title.trim(),
   tag: tag.trim(),
   category,
+  userName: "ユーザー名",
 });
-
 if (selectedPlaylistId) {
   await addPostToPlaylist(
     newPost.id,
@@ -243,7 +243,7 @@ alert("投稿しました！");
           {/* マイリスト */}
           <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
             <label className="block font-extrabold text-slate-950">
-              📚 保存するタブ
+               保存するタブ
             </label>
 
             <p className="mt-1 text-sm font-semibold text-slate-600">

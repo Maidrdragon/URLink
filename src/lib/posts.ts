@@ -83,7 +83,7 @@ export async function getMyPosts(): Promise<PostItem[]> {
 
 // URLを投稿
 export async function addPost(
-  post: Omit<PostItem, "id" | "userId" | "createdAt">
+  post: Omit<PostItem, "id" | "userId" | "userName" | "createdAt">
 ): Promise<PostItem> {
   const supabase = createClient();
 

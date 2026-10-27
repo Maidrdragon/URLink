@@ -18,7 +18,7 @@ export default function Sidebar() {
             : "text-slate-700 hover:bg-slate-100"
         }`}
       >
-        🏠 ホーム
+        ホーム
       </Link>
 
       <Link
@@ -29,7 +29,7 @@ export default function Sidebar() {
             : "text-slate-700 hover:bg-slate-100"
         }`}
       >
-        👤 マイページ
+        マイページ
       </Link>
     </nav>
   );
