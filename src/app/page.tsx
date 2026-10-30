@@ -60,6 +60,8 @@ function getService(url: string): "youtube" | "twitch" | "other" {
 export default function Home() {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  //20261030
+  const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [selectedPlaylistId, setSelectedPlaylistId] = useState("all");
   const [playlistPostIds, setPlaylistPostIds] = useState<string[]>([]);
@@ -80,19 +82,51 @@ export default function Home() {
     });
     return () => { active = false; subscription.unsubscribe(); };
   }, []);
-
+//20261030
   const loadPosts = useCallback(async () => {
-    try {
-      setError("");
-      const savedPosts = await getPosts();
-      setPosts(savedPosts);
-    } catch (cause) {
-      console.error("投稿の読み込みに失敗:", cause);
-      setError("投稿を読み込めませんでした。");
-    } finally {
-      setLoading(false);
+  try {
+    setError("");
+
+    const savedPosts = await getPosts();
+    setPosts(savedPosts);
+
+    // 投稿者のユーザーIDを取得（重複を除く）
+    const userIds = [
+      ...new Set(savedPosts.map((post) => post.userId)),
+    ];
+
+    if (userIds.length > 0) {
+      const supabase = createClient();
+
+      // profilesテーブルからプロフィール画像を取得
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, avatar_url")
+        .in("id", userIds);
+
+      if (error) {
+        console.error("プロフィール画像の取得に失敗:", error);
+      } else {
+        const avatarMap: Record<string, string> = {};
+
+        data?.forEach((profile) => {
+          if (profile.avatar_url) {
+            avatarMap[profile.id] = profile.avatar_url;
+          }
+        });
+
+        setAvatarUrls(avatarMap);
+      }
+    } else {
+      setAvatarUrls({});
     }
-  }, []);
+  } catch (cause) {
+    console.error("投稿の読み込みに失敗:", cause);
+    setError("投稿を読み込めませんでした。");
+  } finally {
+    setLoading(false);
+  }
+}, []);
 
   useEffect(() => {
     void loadPosts();
@@ -224,9 +258,34 @@ export default function Home() {
                       )}
                       <div className="p-4">
                         <h2 className="line-clamp-3 text-base font-extrabold leading-6 text-slate-950">{post.title}</h2>
-                        <p className="mt-2 text-sm font-bold text-slate-500">
-  投稿者：{post.userName}
-</p>
+                        <div className="mt-2 flex items-center gap-2">
+  {avatarUrls[post.userId] ? (
+    <img
+      src={avatarUrls[post.userId]}
+      alt="投稿者のプロフィール画像"
+      className="h-8 w-8 rounded-full border border-slate-200 object-cover"
+    />
+  ) : (
+    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-500">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="currentColor"
+        className="h-5 w-5"
+      >
+        <path
+          fillRule="evenodd"
+          d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm-8 9a8 8 0 1 1 16 0H4Z"
+          clipRule="evenodd"
+        />
+      </svg>
+    </div>
+  )}
+
+  <p className="text-sm font-bold text-slate-500">
+    投稿者：{post.userName}
+  </p>
+</div>
                         <p className="mt-3 text-sm font-semibold text-slate-600">{post.category}</p>
                         {post.tag && <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">#{post.tag}</span>}
                         <p className="mt-3 break-all text-xs font-semibold text-slate-500">{post.url}</p>

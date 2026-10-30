@@ -103,7 +103,7 @@ const newPost = await addPost({
   title: title.trim(),
   tag: tag.trim(),
   category,
-  userName: "ユーザー名",
+  
 });
 if (selectedPlaylistId) {
   await addPostToPlaylist(
