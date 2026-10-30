@@ -82,6 +82,7 @@ export async function getMyPosts(): Promise<PostItem[]> {
 }
 
 // URLを投稿
+//20261030
 export async function addPost(
   post: Omit<PostItem, "id" | "userId" | "userName" | "createdAt">
 ): Promise<PostItem> {
