@@ -193,8 +193,8 @@ alert("投稿しました！");
                 setTag(event.target.value)
               }
               placeholder="例：まどマギ"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-            />
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+/>
           </div>
 
           {/* 固定カテゴリー */}
