@@ -212,6 +212,7 @@ alert("投稿しました！");
               className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
 
 
+
             >
               <option value="動画">
                 動画
@@ -261,7 +262,8 @@ alert("投稿しました！");
                   event.target.value
                 )
               }
-              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-bold outline-none focus:border-blue-500"
+              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-bold outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+
             >
               <option value="">
                 タブを選択しない
@@ -292,7 +294,8 @@ alert("投稿しました！");
                     )
                   }
                   placeholder="例：アニメ"
-                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:border-blue-500"
+                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+
                 />
 
                 <button
