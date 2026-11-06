@@ -208,9 +208,8 @@ export default function Home() {
       <div className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center" aria-hidden="true">
         <img src="/URLink.png" alt="" className="w-[75vw] max-w-[1300px] select-none opacity-[0.05]" />
       </div>
-      <div className="relative z-10 mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
-        <aside className="w-60 flex-shrink-0">
-          <div className="sticky top-6 rounded-2xl bg-white p-4 shadow-sm">
+<div className="relative z-10 mx-auto flex w-full max-w-[1700px] flex-col gap-6 px-4 py-4 sm:flex-row sm:gap-6 sm:px-6 sm:py-8">        <aside className="w-full sm:w-60 sm:flex-shrink-0">
+          <div className="rounded-2xl bg-white p-4 shadow-sm sm:sticky sm:top-6">
             <Sidebar />
             <h2 className="mb-4 text-lg font-extrabold text-slate-950"> マイリスト</h2>
             <div className="space-y-2">
@@ -287,7 +286,18 @@ export default function Home() {
   </p>
 </div>
                         <p className="mt-3 text-sm font-semibold text-slate-600">{post.category}</p>
-                        {post.tag && <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">#{post.tag}</span>}
+                        {post.tag && (
+  <div className="mt-3 flex flex-wrap gap-2">
+    {post.tag.split(",").filter(Boolean).map((tag, index) => (
+      <span
+        key={`${post.id}-${index}`}
+        className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700"
+      >
+        {tag.startsWith("#") ? tag : `#${tag}`}
+      </span>
+    ))}
+  </div>
+)}
                         <p className="mt-3 break-all text-xs font-semibold text-slate-500">{post.url}</p>
                       </div>
                     </a>
