@@ -445,13 +445,13 @@ export default function PostPage() {
     }
 
     // 入力欄に残っているタグも保存対象にする
-    const finalTags = [...tags];
-
-    const remainingTag = tagInput.trim().replace(/^#/, "");
-
-    if (remainingTag && !finalTags.includes(remainingTag)) {
-      finalTags.push(remainingTag);
-    }
+    const finalTags = [
+  ...new Set(
+    [...tags, ...tagInput.split(/[、,，]/)]
+      .map((tag) => tag.trim().replace(/^#/, ""))
+      .filter(Boolean)
+  ),
+];
 
     setLoading(true);
 
@@ -545,24 +545,19 @@ export default function PostPage() {
               タグを入力して追加してください。複数登録できます。
             </p>
 
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={tagInput}
-                onChange={(event) => setTagInput(event.target.value)}
-                onKeyDown={handleTagKeyDown}
-                placeholder="例：モンスト、攻略、ガチャ"
-                className="min-w-0 flex-1 rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
-              />
+           <div>
+  <input
+    type="text"
+    value={tagInput}
+    onChange={(event) => setTagInput(event.target.value)}
+    placeholder="例：モンスト、攻略、ガチャ"
+    className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+  />
 
-              <button
-                type="button"
-                onClick={addTag}
-                className="rounded-xl bg-blue-600 px-5 py-3 font-extrabold text-white transition hover:bg-blue-700"
-              >
-                追加
-              </button>
-            </div>
+  <p className="mt-2 text-sm font-semibold text-slate-500">
+    「、」で区切ると複数のタグをまとめて登録できます。
+  </p>
+</div>
 
             {/* 登録済みタグ */}
             {tags.length > 0 && (
