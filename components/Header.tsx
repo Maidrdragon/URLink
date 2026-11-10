@@ -158,8 +158,8 @@ export default function Header({ onSearch }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-#6996ff via-#a7fff6 via-#a7ffc2 via-#e9ffa7 via-#ffc783 to-#ff7e7e shadow-lg">
-    // className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-green-500 to-white shadow-lg"11/10コード色書き換え、失敗、コードがそのまま表示
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-A100 via-teal-A200 via-lime-A100 via-amber-300 to-deeporange-300 shadow-lg">
+    //11/10コード書き換え色
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
         <Link
           href="/"
