@@ -170,8 +170,9 @@ export default function Header({ onSearch }: HeaderProps) {
             width={36}
             height={36}
             className="rounded-lg object-contain"
+            //11/10コード無効か
           />
-          <span className="text-xl font-extrabold">URLink</span>
+          {/* <span className="text-xl font-extrabold">URLink</span> */}
         </Link>
 
         <form
