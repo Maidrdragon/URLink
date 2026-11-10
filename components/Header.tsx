@@ -158,7 +158,7 @@ export default function Header({ onSearch }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-red-500 via-pink-500 to-purple-600 shadow-lg">
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-green-500 to-white shadow-lg">
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
         <Link
           href="/"
@@ -167,8 +167,8 @@ export default function Header({ onSearch }: HeaderProps) {
           <Image
             src="/URLink.png"
             alt="URLink"
-            width={36}
-            height={36}
+            width={88}
+            height={88}
             className="rounded-lg object-contain"
             //11/10コード無効か
           />
