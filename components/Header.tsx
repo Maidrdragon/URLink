@@ -168,8 +168,8 @@ export default function Header({ onSearch }: HeaderProps) {
           <Image
             src="/logonew.PNG"
             alt="URLink"
-            width={36}
-            height={36}
+            width={120}
+            height={120}
             className="rounded-lg object-contain"
             //11/10コード無効か
           />
