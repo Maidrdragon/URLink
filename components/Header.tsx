@@ -166,10 +166,10 @@ export default function Header({ onSearch }: HeaderProps) {
           className="flex shrink-0 items-center gap-2 text-white"
         >
           <Image
-            src="/URLink.png"
+            src="/logonew.png"
             alt="URLink"
-            width={88}
-            height={88}
+            width={36}
+            height={36}
             className="rounded-lg object-contain"
             //11/10コード無効か
           />
