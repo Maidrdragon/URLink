@@ -158,15 +158,15 @@ export default function Header({ onSearch }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-A100 via-teal-A200 via-lime-A100 via-amber-300 to-deeporange-300 shadow-lg">
-    //11/10コード書き換え色
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-A100 via-teal-A200 via-lime-A100 via-amber-300 to-deeporange-300 ">
+    
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
         <Link
           href="/"
           className="flex shrink-0 items-center gap-2 text-white"
         >
           <Image
-            src="/logonew.png"
+            src="/logonew.PNG"
             alt="URLink"
             width={36}
             height={36}
