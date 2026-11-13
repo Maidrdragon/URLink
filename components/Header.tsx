@@ -21,6 +21,9 @@ export default function Header({ onSearch }: HeaderProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("relevance");
   const [avatarUrl, setAvatarUrl] = useState("");
 
+  // ホーム画面かどうかを判定
+  const isHome = pathname === "/";
+
   useEffect(() => {
     const supabase = createClient();
     let active = true;
@@ -86,6 +89,7 @@ export default function Header({ onSearch }: HeaderProps) {
     <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-200 via-teal-200 via-lime-100 via-amber-300 to-orange-300 shadow-sm">
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
 
+        {/* ロゴ */}
         <Link
           href="/"
           aria-label="URLinkホーム"
@@ -101,26 +105,30 @@ export default function Header({ onSearch }: HeaderProps) {
           />
         </Link>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex min-w-0 flex-1 items-center gap-2"
-        >
-          <input
-            type="search"
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder="動画や投稿を検索..."
-            className="min-w-0 flex-1 rounded-xl bg-white px-4 py-2 text-slate-800 outline-none focus:ring-2 focus:ring-purple-200"
-          />
-
-          <button
-            type="submit"
-            className="rounded-xl bg-white px-4 py-2 font-bold text-purple-700 hover:bg-purple-50"
+        {/* ホーム画面だけ検索バーを表示 */}
+        {isHome && (
+          <form
+            onSubmit={handleSubmit}
+            className="flex min-w-0 flex-1 items-center gap-2"
           >
-            検索
-          </button>
-        </form>
+            <input
+              type="search"
+              value={keyword}
+              onChange={(event) => setKeyword(event.target.value)}
+              placeholder="動画や投稿を検索..."
+              className="min-w-0 flex-1 rounded-xl bg-white px-4 py-2 text-slate-800 outline-none focus:ring-2 focus:ring-purple-200"
+            />
 
+            <button
+              type="submit"
+              className="rounded-xl bg-white px-4 py-2 font-bold text-purple-700 hover:bg-purple-50"
+            >
+              検索
+            </button>
+          </form>
+        )}
+
+        {/* プロフィール画像 */}
         <Link
           href="/account"
           aria-label="アカウント"
