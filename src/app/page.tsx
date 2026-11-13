@@ -3,7 +3,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "../lib/supabase/client";
-import { useSearchParams } from "next/navigation";
 import type { SortOrder } from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
 import FavoriteButton from "../../components/FavoriteButton";
@@ -96,7 +95,7 @@ function getService(url: string): "youtube" | "twitch" | "other" {
 }
 
 export default function Home() {
-  const searchParams = useSearchParams();
+  
 
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -157,23 +156,23 @@ export default function Home() {
   }, []);
 
   // 別ページから検索してホームに移動した場合の処理
-  useEffect(() => {
-    const query = searchParams.get("q");
+useEffect(() => {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get("q");
 
-    if (query !== null) {
-      const orderParam = searchParams.get("order");
+  if (query !== null) {
+    const orderParam = params.get("order");
 
-      const order: SortOrder =
-        orderParam === "relevance" ||
-        orderParam === "date" ||
-        orderParam === "viewCount"
-          ? orderParam
-          : "date";
+    const order: SortOrder =
+      orderParam === "relevance" ||
+      orderParam === "date" ||
+      orderParam === "viewCount"
+        ? orderParam
+        : "date";
 
-      handleSearch(query, order);
-    }
-  }, [searchParams]);
-
+    handleSearch(query, order);
+  }
+}, []);
   // 投稿とプロフィール画像を読み込む
   const loadPosts = useCallback(async () => {
     try {
