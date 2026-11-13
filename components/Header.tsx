@@ -3,6 +3,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { createClient } from "../src/lib/supabase/client";
 
@@ -13,6 +14,9 @@ type HeaderProps = {
 };
 
 export default function Header({ onSearch }: HeaderProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+
   const [keyword, setKeyword] = useState("");
   const [sortOrder, setSortOrder] = useState<SortOrder>("relevance");
   const [avatarUrl, setAvatarUrl] = useState("");
@@ -53,16 +57,39 @@ export default function Header({ onSearch }: HeaderProps) {
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    onSearch?.(keyword, sortOrder);
+
+    if (onSearch) {
+      onSearch(keyword, sortOrder);
+      return;
+    }
+
+    if (pathname === "/") {
+      window.dispatchEvent(
+        new CustomEvent("urlink-search", {
+          detail: {
+            keyword,
+            order: sortOrder,
+          },
+        })
+      );
+    } else {
+      const params = new URLSearchParams();
+
+      params.set("q", keyword);
+      params.set("order", sortOrder);
+
+      router.push(`/?${params.toString()}`);
+    }
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-A100 via-teal-A200 via-lime-A100 via-amber-300 to-deeporange-300 ">
-    
+    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-200 via-teal-200 via-lime-100 via-amber-300 to-orange-300 shadow-sm">
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
+
         <Link
           href="/"
-          className="flex shrink-0 items-center gap-2 text-white"
+          aria-label="URLinkホーム"
+          className="flex shrink-0 items-center"
         >
           <Image
             src="/logonew.PNG"
@@ -70,9 +97,8 @@ export default function Header({ onSearch }: HeaderProps) {
             width={120}
             height={120}
             className="rounded-lg object-contain"
-            //11/10コード無効か
+            priority
           />
-          {/* <span className="text-xl font-extrabold">URLink</span> */}
         </Link>
 
         <form
@@ -87,8 +113,6 @@ export default function Header({ onSearch }: HeaderProps) {
             className="min-w-0 flex-1 rounded-xl bg-white px-4 py-2 text-slate-800 outline-none focus:ring-2 focus:ring-purple-200"
           />
 
-          
-
           <button
             type="submit"
             className="rounded-xl bg-white px-4 py-2 font-bold text-purple-700 hover:bg-purple-50"
@@ -96,8 +120,6 @@ export default function Header({ onSearch }: HeaderProps) {
             検索
           </button>
         </form>
-
-        
 
         <Link
           href="/account"
@@ -127,6 +149,7 @@ export default function Header({ onSearch }: HeaderProps) {
             </svg>
           )}
         </Link>
+
       </div>
     </header>
   );
