@@ -30,23 +30,10 @@ export default function PostActionsMenu({
 
   async function handleShare() {
     try {
-      if (navigator.share) {
-        await navigator.share({
-          title: "URLinkの投稿",
-          url,
-        });
-      } else if (navigator.clipboard?.writeText) {
-        await navigator.clipboard.writeText(url);
-        window.alert("投稿URLをコピーしました。");
-      } else {
-        window.prompt("URLをコピーしてください。", url);
-      }
-    } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        return;
-      }
-
-      window.alert("共有できませんでした。");
+      await navigator.clipboard.writeText(url);
+      window.alert("投稿URLをコピーしました。");
+    } catch {
+      window.alert("URLをコピーできませんでした。");
     } finally {
       setOpen(false);
     }
@@ -87,13 +74,13 @@ export default function PostActionsMenu({
 
       {open && (
         <div className="absolute right-0 top-11 z-30 w-56 rounded-xl border border-slate-200 bg-white p-2 shadow-xl">
-          {/* 共有 */}
+          {/* リンクをコピー */}
           <button
             type="button"
             onClick={() => void handleShare()}
             className="w-full rounded-lg px-3 py-3 text-left text-sm font-bold text-slate-700 hover:bg-slate-100"
           >
-            ↗ 共有
+            リンクをコピー
           </button>
 
           {/* お気に入り */}
