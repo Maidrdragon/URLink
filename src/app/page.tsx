@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "../lib/supabase/client";
 import type { SortOrder } from "../../components/Header";
 import Sidebar from "../../components/Sidebar";
-import FavoriteButton from "../../components/FavoriteButton";
+import PostActionsMenu from "../../components/PostActionsMenu";
 import { deletePost, getPosts, type PostItem } from "../lib/posts";
 import {
   getPlaylistPostIds,
@@ -95,8 +95,6 @@ function getService(url: string): "youtube" | "twitch" | "other" {
 }
 
 export default function Home() {
-  
-
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [avatarUrls, setAvatarUrls] = useState<Record<string, string>>({});
@@ -156,23 +154,24 @@ export default function Home() {
   }, []);
 
   // 別ページから検索してホームに移動した場合の処理
-useEffect(() => {
-  const params = new URLSearchParams(window.location.search);
-  const query = params.get("q");
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const query = params.get("q");
 
-  if (query !== null) {
-    const orderParam = params.get("order");
+    if (query !== null) {
+      const orderParam = params.get("order");
 
-    const order: SortOrder =
-      orderParam === "relevance" ||
-      orderParam === "date" ||
-      orderParam === "viewCount"
-        ? orderParam
-        : "date";
+      const order: SortOrder =
+        orderParam === "relevance" ||
+        orderParam === "date" ||
+        orderParam === "viewCount"
+          ? orderParam
+          : "date";
 
-    handleSearch(query, order);
-  }
-}, []);
+      handleSearch(query, order);
+    }
+  }, []);
+
   // 投稿とプロフィール画像を読み込む
   const loadPosts = useCallback(async () => {
     try {
@@ -383,6 +382,7 @@ useEffect(() => {
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-[1700px] flex-col gap-6 px-6 py-8 sm:flex-row">
+        {/* 左側サイドバー */}
         <aside className="w-full flex-shrink-0 sm:w-60">
           <div className="rounded-2xl bg-white p-4 shadow-sm sm:sticky sm:top-6">
             <Sidebar />
@@ -429,6 +429,7 @@ useEffect(() => {
           </div>
         </aside>
 
+        {/* メイン画面 */}
         <main className="min-w-0 flex-1">
           <section className="mb-10">
             <div className="mb-6 flex flex-wrap items-center gap-3">
@@ -437,10 +438,6 @@ useEffect(() => {
                   ? `「${searchWord}」の投稿検索結果`
                   : "新着投稿"}
               </h1>
-
-              <span className="rounded-full bg-blue-100 px-3 py-1 text-sm font-bold text-blue-800">
-                {visiblePosts.length}件
-              </span>
             </div>
 
             <p className="mb-6 font-semibold text-slate-600">
@@ -467,21 +464,36 @@ useEffect(() => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {/* 投稿カード一覧 */}
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visiblePosts.map((post) => {
                 const thumbnail = getYouTubeThumbnail(post.url);
                 const service = getService(post.url);
+                const isOwner = currentUserId === post.userId;
+
+                const favoriteItem =
+                  service === "youtube" || service === "twitch"
+                    ? {
+                        id: `${service}-post-${post.id}`,
+                        service,
+                        title: post.title,
+                        creator: "URLink投稿",
+                        thumbnail: thumbnail ?? "",
+                        url: post.url,
+                      }
+                    : undefined;
 
                 return (
                   <article
                     key={post.id}
-                    className="overflow-hidden rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="relative overflow-visible rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                   >
+                    {/* 投稿内容 */}
                     <a
                       href={post.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block"
+                      className="block overflow-hidden rounded-2xl"
                     >
                       {thumbnail ? (
                         <img
@@ -490,25 +502,28 @@ useEffect(() => {
                           className="aspect-video w-full bg-slate-600 object-cover"
                         />
                       ) : (
-                        <div className="flex aspect-video items-center justify-center bg-slate-700 text-4xl font-extrabold text-white">
+                        <div className="flex aspect-video items-center justify-center bg-slate-700 text-3xl font-extrabold text-white">
                           {service === "twitch" ? "Twitch" : "URL"}
                         </div>
                       )}
 
-                      <div className="p-4">
-                        <h2 className="line-clamp-3 text-base font-extrabold leading-6 text-slate-950">
+                      <div className="p-3">
+                        <h2
+                          className="truncate pr-7 text-sm font-extrabold leading-6 text-slate-950"
+                          title={post.title}
+                        >
                           {post.title}
                         </h2>
 
-                        <div className="mt-2 flex items-center gap-2">
+                        <div className="mt-2 flex min-w-0 items-center gap-2">
                           {avatarUrls[post.userId] ? (
                             <img
                               src={avatarUrls[post.userId]}
                               alt="投稿者のプロフィール画像"
-                              className="h-8 w-8 rounded-full border border-slate-200 object-cover"
+                              className="h-7 w-7 flex-shrink-0 rounded-full border border-slate-200 object-cover"
                             />
                           ) : (
-                            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-slate-500">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-slate-200 text-slate-500">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -524,50 +539,42 @@ useEffect(() => {
                             </div>
                           )}
 
-                          <p className="text-sm font-bold text-slate-500">
+                          <p className="truncate text-xs font-bold text-slate-500">
                             投稿者：{post.userName}
                           </p>
                         </div>
 
-                        <p className="mt-3 text-sm font-semibold text-slate-600">
+                        <p className="mt-2 text-xs font-semibold text-slate-600">
                           {post.category}
                         </p>
 
                         {post.tag && (
-                          <span className="mt-3 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
+                          <span className="mt-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
                             #{post.tag}
                           </span>
                         )}
 
-                        <p className="mt-3 break-all text-xs font-semibold text-slate-500">
+                        <p className="mt-2 truncate text-xs font-semibold text-slate-500">
                           {post.url}
                         </p>
                       </div>
                     </a>
 
-                    <div className="flex flex-wrap items-center gap-2 border-t border-slate-100 p-4">
-                      {(service === "youtube" || service === "twitch") && (
-                        <FavoriteButton
-                          item={{
-                            id: `${service}-post-${post.id}`,
-                            service,
-                            title: post.title,
-                            creator: "URLink投稿",
-                            thumbnail: thumbnail ?? "",
-                            url: post.url,
-                          }}
-                        />
-                      )}
-
-                      {currentUserId === post.userId && (
-                        <button
-                          type="button"
-                          onClick={() => void handleDeletePost(post.id)}
-                          className="rounded-lg bg-red-100 px-3 py-2 text-sm font-extrabold text-red-700 transition hover:bg-red-200"
-                        >
-                          🗑 削除
-                        </button>
-                      )}
+                    {/* 共通の投稿メニュー */}
+                    <div className="absolute right-2 top-2 z-30">
+                      <PostActionsMenu
+                        postId={post.id}
+                        url={post.url}
+                        playlists={playlists}
+                        favoriteItem={favoriteItem}
+                        onDelete={
+                          isOwner
+                            ? () => {
+                                void handleDeletePost(post.id);
+                              }
+                            : undefined
+                        }
+                      />
                     </div>
                   </article>
                 );
