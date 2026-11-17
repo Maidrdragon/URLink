@@ -81,11 +81,11 @@ export default function PostPage() {
       return;
     }
 
-    // 「、」「,」「，」で区切ってタグを取得
+    // 空白・読点・カンマでタグを分割
     const finalTags = [
       ...new Set(
         tagInput
-          .split(/[、,，]/)
+          .split(/[\s、,，]+/)
           .map((tag) => tag.trim().replace(/^#+/, ""))
           .filter(Boolean)
       ),
@@ -189,12 +189,12 @@ export default function PostPage() {
               type="text"
               value={tagInput}
               onChange={(event) => setTagInput(event.target.value)}
-              placeholder="例：モンスト、攻略、ガチャ"
+              placeholder="例：モンスト 攻略 ガチャ"
               className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
             />
 
             <p className="mt-2 text-sm font-semibold text-slate-500">
-              「、」で区切ると複数のタグをまとめて登録できます。
+              半角スペース・全角スペース・「、」「,」で区切ると複数のタグを登録できます。
               投稿すると各タグの先頭に # が付きます。
             </p>
           </div>
