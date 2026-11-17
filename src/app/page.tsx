@@ -94,6 +94,18 @@ function getService(url: string): "youtube" | "twitch" | "other" {
   return "other";
 }
 
+// タグを1つずつに分割して整える
+function parseTags(tag: string): string[] {
+  return [
+    ...new Set(
+      tag
+        .split(/[,\s、，]+/)
+        .map((item) => item.trim().replace(/^#+/, ""))
+        .filter(Boolean)
+    ),
+  ];
+}
+
 export default function Home() {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -548,10 +560,18 @@ export default function Home() {
                           {post.category}
                         </p>
 
+                        {/* タグを1つずつ表示 */}
                         {post.tag && (
-                          <span className="mt-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
-                            #{post.tag}
-                          </span>
+                          <div className="mt-2 flex flex-wrap gap-1">
+                            {parseTags(post.tag).map((tag, index) => (
+                              <span
+                                key={`${tag}-${index}`}
+                                className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700"
+                              >
+                                #{tag}
+                              </span>
+                            ))}
+                          </div>
                         )}
 
                         <p className="mt-2 truncate text-xs font-semibold text-slate-500">
