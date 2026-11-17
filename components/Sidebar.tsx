@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import Link from "next/link";
@@ -14,8 +13,8 @@ export default function Sidebar() {
         href="/"
         className={`block rounded-xl px-4 py-3 font-extrabold transition ${
           pathname === "/"
-            ? "bg-blue-600 text-white"
-            : "text-slate-700 hover:bg-slate-100"
+            ? "bg-slate-900 text-white"
+            : "text-slate-800 hover:bg-slate-100"
         }`}
       >
         ホーム
@@ -25,8 +24,8 @@ export default function Sidebar() {
         href="/mypage"
         className={`block rounded-xl px-4 py-3 font-extrabold transition ${
           pathname === "/mypage"
-            ? "bg-blue-600 text-white"
-            : "text-slate-700 hover:bg-slate-100"
+            ? "bg-slate-900 text-white"
+            : "text-slate-800 hover:bg-slate-100"
         }`}
       >
         マイページ

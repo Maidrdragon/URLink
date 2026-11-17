@@ -79,6 +79,17 @@ function getService(url: string): "youtube" | "twitch" | "other" {
   return "other";
 }
 
+function parseTags(tag: string): string[] {
+  return [
+    ...new Set(
+      tag
+        .split(/[,\s、，]+/)
+        .map((item) => item.trim().replace(/^#+/, ""))
+        .filter(Boolean)
+    ),
+  ];
+}
+
 export default function MyPage() {
   const router = useRouter();
 
@@ -306,7 +317,7 @@ export default function MyPage() {
     return (
       <article
         key={post.id}
-        className="relative overflow-visible rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+        className="relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
       >
         <a
           href={post.url}
@@ -321,7 +332,7 @@ export default function MyPage() {
               className="aspect-video w-full bg-slate-600 object-cover"
             />
           ) : (
-            <div className="flex aspect-video items-center justify-center bg-slate-700 text-2xl font-extrabold text-white">
+            <div className="flex aspect-video items-center justify-center bg-slate-800 text-2xl font-extrabold text-white">
               {service === "twitch" ? "Twitch" : "URL"}
             </div>
           )}
@@ -339,9 +350,16 @@ export default function MyPage() {
             </p>
 
             {post.tag && (
-              <span className="mt-2 inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700">
-                #{post.tag}
-              </span>
+              <div className="mt-2 flex flex-wrap gap-1">
+                {parseTags(post.tag).map((tag) => (
+                  <span
+                    key={tag}
+                    className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-800"
+                  >
+                    #{tag}
+                  </span>
+                ))}
+              </div>
             )}
 
             <p className="mt-2 truncate text-xs font-semibold text-slate-500">
@@ -369,7 +387,7 @@ export default function MyPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center font-bold text-slate-700">
+      <main className="flex min-h-screen items-center justify-center bg-slate-50 font-bold text-slate-700">
         読み込み中...
       </main>
     );
@@ -381,18 +399,18 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b bg-white px-6 py-5">
+      <header className="border-b border-slate-200 bg-white px-6 py-5">
         <div className="mx-auto flex max-w-[1700px] items-center justify-between">
           <Link
             href="/"
-            className="text-2xl font-extrabold text-blue-600"
+            className="text-2xl font-extrabold text-slate-950"
           >
             URLink
           </Link>
 
           <Link
             href="/account"
-            className="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-800 transition hover:bg-slate-200"
+            className="rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
           >
             アカウント
           </Link>
@@ -402,18 +420,18 @@ export default function MyPage() {
       <div className="mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
         {/* 左側メニュー */}
         <aside className="hidden w-60 shrink-0 sm:block">
-          <div className="sticky top-6 rounded-2xl bg-white p-4 shadow-sm">
+          <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
             <nav className="space-y-2">
               <Link
                 href="/"
-                className="block rounded-xl px-4 py-3 font-extrabold text-slate-700 transition hover:bg-slate-100"
+                className="block rounded-xl px-4 py-3 font-extrabold text-slate-800 transition hover:bg-slate-100"
               >
                 ホーム
               </Link>
 
               <Link
                 href="/mypage"
-                className="block rounded-xl bg-blue-600 px-4 py-3 font-extrabold text-white"
+                className="block rounded-xl bg-slate-900 px-4 py-3 font-extrabold text-white"
               >
                 マイページ
               </Link>
@@ -434,8 +452,8 @@ export default function MyPage() {
               onClick={() => setActiveTab("posts")}
               className={`rounded-xl px-5 py-3 font-extrabold transition ${
                 activeTab === "posts"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-slate-700 hover:bg-slate-100"
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
               }`}
             >
               自分の投稿 ({posts.length})
@@ -446,8 +464,8 @@ export default function MyPage() {
               onClick={() => setActiveTab("favorites")}
               className={`rounded-xl px-5 py-3 font-extrabold transition ${
                 activeTab === "favorites"
-                  ? "bg-blue-600 text-white"
-                  : "bg-white text-slate-700 hover:bg-slate-100"
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
               }`}
             >
               お気に入り ({favorites.length})
@@ -460,8 +478,8 @@ export default function MyPage() {
                 onClick={() => setActiveTab(playlist.id)}
                 className={`max-w-48 truncate rounded-xl px-5 py-3 font-extrabold transition ${
                   activeTab === playlist.id
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-slate-700 hover:bg-slate-100"
+                    ? "bg-slate-900 text-white"
+                    : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
                 }`}
                 title={playlist.name}
               >
@@ -472,7 +490,7 @@ export default function MyPage() {
             <button
               type="button"
               onClick={() => void handleCreatePlaylist()}
-              className="rounded-xl border-2 border-dashed border-slate-300 bg-white px-5 py-3 font-extrabold text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+              className="rounded-xl border-2 border-dashed border-slate-400 bg-white px-5 py-3 font-extrabold text-slate-800 transition hover:border-slate-700 hover:bg-slate-100"
             >
               ＋ プレイリスト作成
             </button>
@@ -482,13 +500,13 @@ export default function MyPage() {
           {activeTab === "posts" && (
             <section>
               {posts.length === 0 ? (
-                <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
                   <p className="font-bold text-slate-600">
                     まだ投稿がありません。
                   </p>
                   <Link
                     href="/post"
-                    className="mt-5 inline-block font-bold text-blue-600 hover:underline"
+                    className="mt-5 inline-block rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
                   >
                     ＋ 投稿する
                   </Link>
@@ -505,13 +523,13 @@ export default function MyPage() {
           {activeTab === "favorites" && (
             <section>
               {favorites.length === 0 ? (
-                <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
                   <p className="font-bold text-slate-600">
                     まだお気に入りがありません。
                   </p>
                   <Link
                     href="/"
-                    className="mt-5 inline-block font-bold text-blue-600 hover:underline"
+                    className="mt-5 inline-block rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
                   >
                     動画を探す
                   </Link>
@@ -521,7 +539,7 @@ export default function MyPage() {
                   {favorites.map((item) => (
                     <article
                       key={item.id}
-                      className="overflow-hidden rounded-2xl bg-white shadow-md transition hover:-translate-y-1 hover:shadow-xl"
+                      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                     >
                       <a
                         href={item.url}
@@ -536,7 +554,7 @@ export default function MyPage() {
                             className="aspect-video w-full bg-slate-600 object-cover"
                           />
                         ) : (
-                          <div className="flex aspect-video items-center justify-center bg-slate-700 font-bold text-white">
+                          <div className="flex aspect-video items-center justify-center bg-slate-800 font-bold text-white">
                             動画
                           </div>
                         )}
@@ -557,7 +575,7 @@ export default function MyPage() {
                         <button
                           type="button"
                           onClick={() => void handleRemoveFavorite(item.id)}
-                          className="mt-3 w-full rounded-lg bg-red-50 px-3 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100"
+                          className="mt-3 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-700"
                         >
                           お気に入りから削除
                         </button>
@@ -573,7 +591,7 @@ export default function MyPage() {
           {selectedPlaylist && (
             <section>
               {playlistPosts.length === 0 ? (
-                <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
                   <p className="font-bold text-slate-600">
                     このプレイリストには、まだ投稿がありません。
                   </p>

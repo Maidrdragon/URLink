@@ -396,7 +396,7 @@ export default function Home() {
       <div className="relative z-10 mx-auto flex max-w-[1700px] flex-col gap-6 px-6 py-8 sm:flex-row">
         {/* 左側サイドバー */}
         <aside className="w-full flex-shrink-0 sm:w-60">
-          <div className="rounded-2xl bg-white p-4 shadow-sm sm:sticky sm:top-6">
+          <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:sticky sm:top-6">
             <Sidebar />
 
             <h2 className="mb-4 text-lg font-extrabold text-slate-950">
@@ -409,8 +409,8 @@ export default function Home() {
                 onClick={() => setSelectedPlaylistId("all")}
                 className={`w-full rounded-xl px-4 py-3 text-left font-extrabold transition ${
                   selectedPlaylistId === "all"
-                    ? "bg-blue-600 text-white"
-                    : "text-slate-700 hover:bg-slate-100"
+                    ? "bg-slate-900 text-white"
+                    : "text-slate-800 hover:bg-slate-100"
                 }`}
               >
                 すべて
@@ -423,8 +423,8 @@ export default function Home() {
                   onClick={() => setSelectedPlaylistId(playlist.id)}
                   className={`w-full rounded-xl px-4 py-3 text-left font-bold transition ${
                     selectedPlaylistId === playlist.id
-                      ? "bg-blue-600 text-white"
-                      : "text-slate-700 hover:bg-slate-100"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-800 hover:bg-slate-100"
                   }`}
                 >
                   {playlist.name}
@@ -434,7 +434,7 @@ export default function Home() {
 
             <a
               href="/post"
-              className="mt-5 block rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 text-center font-extrabold text-slate-600 transition hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700"
+              className="mt-5 block rounded-xl border-2 border-dashed border-slate-300 px-4 py-3 text-center font-extrabold text-slate-700 transition hover:border-slate-500 hover:bg-slate-100"
             >
               ＋ 投稿する
             </a>
@@ -463,13 +463,13 @@ export default function Home() {
             )}
 
             {error && (
-              <p className="mb-6 rounded-xl bg-red-50 p-4 font-bold text-red-700">
+              <p className="mb-6 rounded-xl border border-slate-300 bg-slate-100 p-4 font-bold text-slate-800">
                 {error}
               </p>
             )}
 
             {!loading && !error && visiblePosts.length === 0 && (
-              <div className="rounded-2xl bg-white p-10 text-center font-bold text-slate-600">
+              <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center font-bold text-slate-600">
                 {searchWord
                   ? "条件に合う投稿が見つかりませんでした。"
                   : "表示できる投稿がありません。URLを投稿してみましょう。"}
@@ -498,7 +498,7 @@ export default function Home() {
                 return (
                   <article
                     key={post.id}
-                    className="relative overflow-visible rounded-2xl bg-white shadow-md transition duration-300 hover:-translate-y-1 hover:shadow-xl"
+                    className="relative overflow-visible rounded-2xl border border-slate-200 bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-lg"
                   >
                     {/* 投稿内容 */}
                     <a
@@ -566,7 +566,7 @@ export default function Home() {
                             {parseTags(post.tag).map((tag, index) => (
                               <span
                                 key={`${tag}-${index}`}
-                                className="rounded-full bg-blue-100 px-3 py-1 text-xs font-bold text-blue-700"
+                                className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-800"
                               >
                                 #{tag}
                               </span>
