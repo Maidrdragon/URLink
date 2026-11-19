@@ -514,8 +514,12 @@ export default function Home() {
                           className="aspect-video w-full bg-slate-600 object-cover"
                         />
                       ) : (
-                        <div className="flex aspect-video items-center justify-center bg-slate-700 text-3xl font-extrabold text-white">
-                          {service === "twitch" ? "Twitch" : "URL"}
+                        <div className="flex aspect-video w-full items-center justify-center bg-white p-6">
+                          <img
+                            src="/logonew.PNG"
+                            alt="URLink"
+                            className="h-full w-full object-contain"
+                          />
                         </div>
                       )}
 

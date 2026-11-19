@@ -79,17 +79,6 @@ function getService(url: string): "youtube" | "twitch" | "other" {
   return "other";
 }
 
-function parseTags(tag: string): string[] {
-  return [
-    ...new Set(
-      tag
-        .split(/[,\s、，]+/)
-        .map((item) => item.trim().replace(/^#+/, ""))
-        .filter(Boolean)
-    ),
-  ];
-}
-
 export default function MyPage() {
   const router = useRouter();
 
@@ -102,7 +91,12 @@ export default function MyPage() {
   const [activeTab, setActiveTab] = useState("posts");
   const [loading, setLoading] = useState(true);
 
-  // 投稿を読み込む
+  // プレイリスト作成画面
+  const [showCreatePlaylist, setShowCreatePlaylist] = useState(false);
+  const [newPlaylistName, setNewPlaylistName] = useState("");
+  const [creatingPlaylist, setCreatingPlaylist] = useState(false);
+  const [playlistError, setPlaylistError] = useState("");
+
   const loadPosts = useCallback(async () => {
     try {
       const [myPosts, publicPosts] = await Promise.all([
@@ -117,7 +111,6 @@ export default function MyPage() {
     }
   }, []);
 
-  // お気に入りを読み込む
   const loadFavorites = useCallback(async () => {
     try {
       setFavorites(await getFavorites());
@@ -126,7 +119,6 @@ export default function MyPage() {
     }
   }, []);
 
-  // プレイリストを読み込む
   const loadPlaylists = useCallback(async () => {
     try {
       setPlaylists(await getPlaylists());
@@ -179,7 +171,7 @@ export default function MyPage() {
     };
   }, [router, loadPosts, loadFavorites, loadPlaylists]);
 
-  // 投稿・お気に入り・プレイリストの更新を反映
+  // 更新イベント
   useEffect(() => {
     const refreshPosts = () => void loadPosts();
     const refreshFavorites = () => void loadFavorites();
@@ -196,7 +188,7 @@ export default function MyPage() {
     };
   }, [loadPosts, loadFavorites, loadPlaylists]);
 
-  // 選択したプレイリストの投稿IDを取得
+  // プレイリストの投稿IDを取得
   useEffect(() => {
     let active = true;
 
@@ -224,7 +216,6 @@ export default function MyPage() {
     };
   }, [activeTab, playlists]);
 
-  // プレイリストに入っている投稿
   const playlistPosts = useMemo(() => {
     return allPosts.filter((post) =>
       playlistPostIds.includes(post.id)
@@ -275,24 +266,43 @@ export default function MyPage() {
     }
   }
 
-  // 新しいプレイリストを作成
-  async function handleCreatePlaylist() {
-    const name = window.prompt("プレイリスト名を入力してください。");
+  // プレイリスト作成画面を開く
+  function openCreatePlaylist() {
+    setNewPlaylistName("");
+    setPlaylistError("");
+    setShowCreatePlaylist(true);
+  }
 
-    if (name === null || !name.trim()) {
+  // プレイリストを作成
+  async function handleCreatePlaylist() {
+    const name = newPlaylistName.trim();
+
+    if (!name) {
+      setPlaylistError("プレイリスト名を入力してください。");
       return;
     }
 
+    if (creatingPlaylist) return;
+
     try {
+      setCreatingPlaylist(true);
+      setPlaylistError("");
+
       const playlist = await createPlaylist(name);
+
       await loadPlaylists();
       setActiveTab(playlist.id);
+      setShowCreatePlaylist(false);
+      setNewPlaylistName("");
     } catch (error) {
-      window.alert(
+      console.error("プレイリスト作成エラー:", error);
+      setPlaylistError(
         error instanceof Error
           ? error.message
           : "プレイリストを作成できませんでした。"
       );
+    } finally {
+      setCreatingPlaylist(false);
     }
   }
 
@@ -329,11 +339,15 @@ export default function MyPage() {
             <img
               src={thumbnail}
               alt={post.title}
-              className="aspect-video w-full bg-slate-600 object-cover"
+              className="aspect-video w-full bg-slate-100 object-cover"
             />
           ) : (
-            <div className="flex aspect-video items-center justify-center bg-slate-800 text-2xl font-extrabold text-white">
-              {service === "twitch" ? "Twitch" : "URL"}
+            <div className="flex aspect-video items-center justify-center bg-white p-6">
+              <img
+                src="/logonew.PNG"
+                alt="URLink"
+                className="h-full w-full object-contain"
+              />
             </div>
           )}
 
@@ -350,16 +364,9 @@ export default function MyPage() {
             </p>
 
             {post.tag && (
-              <div className="mt-2 flex flex-wrap gap-1">
-                {parseTags(post.tag).map((tag) => (
-                  <span
-                    key={tag}
-                    className="rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-800"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
+              <span className="mt-2 inline-block rounded-full bg-slate-200 px-3 py-1 text-xs font-bold text-slate-800">
+                #{post.tag}
+              </span>
             )}
 
             <p className="mt-2 truncate text-xs font-semibold text-slate-500">
@@ -399,215 +406,247 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white px-6 py-5">
-        <div className="mx-auto flex max-w-[1700px] items-center justify-between">
-          <Link
-            href="/"
-            className="text-2xl font-extrabold text-slate-950"
-          >
-            URLink
-          </Link>
 
-          <Link
-            href="/account"
-            className="rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
+      {/* 2つ目のヘッダーは削除。上部の共通ヘッダーはそのまま */}
+
+      <main className="mx-auto max-w-[1700px] px-6 py-8">
+        <h1 className="mb-7 text-3xl font-extrabold text-slate-950">
+          マイページ
+        </h1>
+
+        {/* タブ */}
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setActiveTab("posts")}
+            className={`rounded-xl px-5 py-3 font-extrabold transition ${
+              activeTab === "posts"
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
+            }`}
           >
-            アカウント
-          </Link>
+            自分の投稿 ({posts.length})
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("favorites")}
+            className={`rounded-xl px-5 py-3 font-extrabold transition ${
+              activeTab === "favorites"
+                ? "bg-slate-900 text-white"
+                : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
+            }`}
+          >
+            お気に入り ({favorites.length})
+          </button>
+
+          {playlists.map((playlist) => (
+            <button
+              key={playlist.id}
+              type="button"
+              onClick={() => setActiveTab(playlist.id)}
+              className={`max-w-48 truncate rounded-xl px-5 py-3 font-extrabold transition ${
+                activeTab === playlist.id
+                  ? "bg-slate-900 text-white"
+                  : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
+              }`}
+              title={playlist.name}
+            >
+              {playlist.name}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            onClick={openCreatePlaylist}
+            className="rounded-xl border-2 border-dashed border-slate-400 bg-white px-5 py-3 font-extrabold text-slate-800 transition hover:border-slate-700 hover:bg-slate-100"
+          >
+            ＋ プレイリスト作成
+          </button>
         </div>
-      </header>
 
-      <div className="mx-auto flex max-w-[1700px] gap-6 px-6 py-8">
-        {/* 左側メニュー */}
-        <aside className="hidden w-60 shrink-0 sm:block">
-          <div className="sticky top-6 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-            <nav className="space-y-2">
-              <Link
-                href="/"
-                className="block rounded-xl px-4 py-3 font-extrabold text-slate-800 transition hover:bg-slate-100"
-              >
-                ホーム
-              </Link>
+        {/* 自分の投稿 */}
+        {activeTab === "posts" && (
+          <section>
+            {posts.length === 0 ? (
+              <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <p className="font-bold text-slate-600">
+                  まだ投稿がありません。
+                </p>
+                <Link
+                  href="/post"
+                  className="mt-5 inline-block font-bold text-slate-900 hover:underline"
+                >
+                  ＋ 投稿する
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {posts.map(renderPostCard)}
+              </div>
+            )}
+          </section>
+        )}
 
-              <Link
-                href="/mypage"
-                className="block rounded-xl bg-slate-900 px-4 py-3 font-extrabold text-white"
-              >
-                マイページ
-              </Link>
-            </nav>
-          </div>
-        </aside>
-
-        {/* メイン画面 */}
-        <main className="min-w-0 flex-1">
-          <h1 className="mb-7 text-3xl font-extrabold text-slate-950">
-            マイページ
-          </h1>
-
-          {/* タブ */}
-          <div className="mb-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setActiveTab("posts")}
-              className={`rounded-xl px-5 py-3 font-extrabold transition ${
-                activeTab === "posts"
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
-              }`}
-            >
-              自分の投稿 ({posts.length})
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setActiveTab("favorites")}
-              className={`rounded-xl px-5 py-3 font-extrabold transition ${
-                activeTab === "favorites"
-                  ? "bg-slate-900 text-white"
-                  : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
-              }`}
-            >
-              お気に入り ({favorites.length})
-            </button>
-
-            {playlists.map((playlist) => (
-              <button
-                key={playlist.id}
-                type="button"
-                onClick={() => setActiveTab(playlist.id)}
-                className={`max-w-48 truncate rounded-xl px-5 py-3 font-extrabold transition ${
-                  activeTab === playlist.id
-                    ? "bg-slate-900 text-white"
-                    : "border border-slate-200 bg-white text-slate-800 hover:bg-slate-100"
-                }`}
-                title={playlist.name}
-              >
-                {playlist.name}
-              </button>
-            ))}
-
-            <button
-              type="button"
-              onClick={() => void handleCreatePlaylist()}
-              className="rounded-xl border-2 border-dashed border-slate-400 bg-white px-5 py-3 font-extrabold text-slate-800 transition hover:border-slate-700 hover:bg-slate-100"
-            >
-              ＋ プレイリスト作成
-            </button>
-          </div>
-
-          {/* 自分の投稿 */}
-          {activeTab === "posts" && (
-            <section>
-              {posts.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-                  <p className="font-bold text-slate-600">
-                    まだ投稿がありません。
-                  </p>
-                  <Link
-                    href="/post"
-                    className="mt-5 inline-block rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
+        {/* お気に入り */}
+        {activeTab === "favorites" && (
+          <section>
+            {favorites.length === 0 ? (
+              <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <p className="font-bold text-slate-600">
+                  まだお気に入りがありません。
+                </p>
+                <Link
+                  href="/"
+                  className="mt-5 inline-block font-bold text-slate-900 hover:underline"
+                >
+                  動画を探す
+                </Link>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {favorites.map((item) => (
+                  <article
+                    key={item.id}
+                    className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
                   >
-                    ＋ 投稿する
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {posts.map(renderPostCard)}
-                </div>
-              )}
-            </section>
-          )}
-
-          {/* お気に入り */}
-          {activeTab === "favorites" && (
-            <section>
-              {favorites.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-                  <p className="font-bold text-slate-600">
-                    まだお気に入りがありません。
-                  </p>
-                  <Link
-                    href="/"
-                    className="mt-5 inline-block rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700"
-                  >
-                    動画を探す
-                  </Link>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {favorites.map((item) => (
-                    <article
-                      key={item.id}
-                      className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+                    <a
+                      href={item.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
                     >
-                      <a
-                        href={item.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block"
-                      >
-                        {item.thumbnail ? (
+                      {item.thumbnail ? (
+                        <img
+                          src={item.thumbnail}
+                          alt={item.title}
+                          className="aspect-video w-full bg-slate-100 object-cover"
+                        />
+                      ) : (
+                        <div className="flex aspect-video items-center justify-center bg-white p-6">
                           <img
-                            src={item.thumbnail}
-                            alt={item.title}
-                            className="aspect-video w-full bg-slate-600 object-cover"
+                            src="/logonew.PNG"
+                            alt="URLink"
+                            className="h-full w-full object-contain"
                           />
-                        ) : (
-                          <div className="flex aspect-video items-center justify-center bg-slate-800 font-bold text-white">
-                            動画
-                          </div>
-                        )}
-                      </a>
+                        </div>
+                      )}
+                    </a>
 
-                      <div className="p-3">
-                        <h2
-                          className="truncate text-sm font-extrabold text-slate-950"
-                          title={item.title}
-                        >
-                          {item.title}
-                        </h2>
+                    <div className="p-3">
+                      <h2
+                        className="truncate text-sm font-extrabold text-slate-950"
+                        title={item.title}
+                      >
+                        {item.title}
+                      </h2>
 
-                        <p className="mt-2 truncate text-xs font-semibold text-slate-500">
-                          {item.creator}
-                        </p>
+                      <p className="mt-2 truncate text-xs font-semibold text-slate-500">
+                        {item.creator}
+                      </p>
 
-                        <button
-                          type="button"
-                          onClick={() => void handleRemoveFavorite(item.id)}
-                          className="mt-3 w-full rounded-lg bg-slate-900 px-3 py-2 text-sm font-bold text-white transition hover:bg-slate-700"
-                        >
-                          お気に入りから削除
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
+                      <button
+                        type="button"
+                        onClick={() => void handleRemoveFavorite(item.id)}
+                        className="mt-3 w-full rounded-lg bg-slate-200 px-3 py-2 text-sm font-bold text-slate-800 transition hover:bg-slate-300"
+                      >
+                        お気に入りから削除
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
 
-          {/* プレイリスト */}
-          {selectedPlaylist && (
-            <section>
-              {playlistPosts.length === 0 ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-10 text-center shadow-sm">
-                  <p className="font-bold text-slate-600">
-                    このプレイリストには、まだ投稿がありません。
-                  </p>
-                  <p className="mt-2 text-sm text-slate-500">
-                    ホーム画面の投稿メニューから追加できます。
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {playlistPosts.map(renderPostCard)}
-                </div>
-              )}
-            </section>
-          )}
-        </main>
-      </div>
+        {/* プレイリスト */}
+        {selectedPlaylist && (
+          <section>
+            {playlistPosts.length === 0 ? (
+              <div className="rounded-2xl bg-white p-10 text-center shadow-sm">
+                <p className="font-bold text-slate-600">
+                  このプレイリストには、まだ投稿がありません。
+                </p>
+                <p className="mt-2 text-sm text-slate-500">
+                  ホーム画面の投稿メニューから追加できます。
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {playlistPosts.map(renderPostCard)}
+              </div>
+            )}
+          </section>
+        )}
+      </main>
+
+      {/* プレイリスト作成モーダル */}
+      {showCreatePlaylist && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !creatingPlaylist) {
+              setShowCreatePlaylist(false);
+            }
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
+            <h2 className="mb-5 text-xl font-extrabold text-slate-950">
+              プレイリストを作成
+            </h2>
+
+            <label
+              htmlFor="playlist-name"
+              className="mb-2 block text-sm font-bold text-slate-700"
+            >
+              プレイリスト名
+            </label>
+
+            <input
+              id="playlist-name"
+              type="text"
+              value={newPlaylistName}
+              onChange={(event) => setNewPlaylistName(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  void handleCreatePlaylist();
+                }
+              }}
+              placeholder="例：お気に入りの動画"
+              maxLength={30}
+              autoFocus
+              className="w-full rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-900 outline-none transition focus:border-slate-700 focus:ring-2 focus:ring-slate-200"
+            />
+
+            {playlistError && (
+              <p className="mt-3 text-sm font-bold text-red-600">
+                {playlistError}
+              </p>
+            )}
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                disabled={creatingPlaylist}
+                onClick={() => setShowCreatePlaylist(false)}
+                className="rounded-xl bg-slate-100 px-5 py-3 font-bold text-slate-700 transition hover:bg-slate-200 disabled:opacity-50"
+              >
+                キャンセル
+              </button>
+
+              <button
+                type="button"
+                disabled={creatingPlaylist}
+                onClick={() => void handleCreatePlaylist()}
+                className="rounded-xl bg-slate-900 px-5 py-3 font-bold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {creatingPlaylist ? "作成中..." : "作成する"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
