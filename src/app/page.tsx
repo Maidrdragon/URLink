@@ -576,14 +576,14 @@ export default function Home() {
                 return (
                   <article
                     key={post.id}
-                    className="relative overflow-visible rounded-2xl border border-[#555555] bg-[#424242] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#777777] hover:shadow-lg"
+                    className="relative overflow-visible rounded-sm border border-[#555555] bg-[#424242] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#777777] hover:shadow-lg"
                   >
                     {/* 投稿内容 */}
                     <a
                       href={post.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="block overflow-hidden rounded-2xl"
+                      className="block overflow-hidden rounded-sm"
                     >
                       {thumbnail ? (
                         <img

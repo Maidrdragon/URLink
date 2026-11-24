@@ -119,7 +119,7 @@ export default function Sidebar() {
                 type="button"
                 disabled={creating}
                 onClick={() => setShowCreate(false)}
-                className="rounded-xl bg-[#505050] px-5 py-3 font-bold text-[#EEEEEE] transition hover:bg-[#606060] disabled:opacity-50"
+                className="rounded-sm bg-[#505050] px-5 py-3 font-bold text-[#EEEEEE] transition hover:bg-[#606060] disabled:opacity-50"
               >
                 キャンセル
               </button>
@@ -128,7 +128,7 @@ export default function Sidebar() {
                 type="button"
                 disabled={creating}
                 onClick={() => void handleCreatePlaylist()}
-                className="rounded-xl bg-[#707070] px-5 py-3 font-bold text-white transition hover:bg-[#808080] disabled:opacity-50"
+                className="rounded-sm bg-[#707070] px-5 py-3 font-bold text-white transition hover:bg-[#808080] disabled:opacity-50"
               >
                 {creating ? "作成中..." : "作成する"}
               </button>
