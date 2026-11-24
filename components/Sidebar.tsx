@@ -8,13 +8,13 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <nav className="mb-6 space-y-2">
+    <nav className="mb-6 space-y-2 font-sans">
       <Link
         href="/"
-        className={`block rounded-xl px-4 py-3 font-extrabold transition ${
+        className={`block rounded-xl px-4 py-3 text-base font-semibold transition ${
           pathname === "/"
-            ? "bg-[#383838] text-white"
-            : "text-[#BBBBBB] hover:bg-[#292929] hover:text-white"
+            ? "bg-[#505050] text-white"
+            : "text-[#DDDDDD] hover:bg-[#505050] hover:text-white"
         }`}
       >
         ホーム
@@ -22,10 +22,10 @@ export default function Sidebar() {
 
       <Link
         href="/mypage"
-        className={`block rounded-xl px-4 py-3 font-extrabold transition ${
+        className={`block rounded-xl px-4 py-3 text-base font-semibold transition ${
           pathname === "/mypage"
-            ? "bg-[#383838] text-white"
-            : "text-[#BBBBBB] hover:bg-[#292929] hover:text-white"
+            ? "bg-[#505050] text-white"
+            : "text-[#DDDDDD] hover:bg-[#505050] hover:text-white"
         }`}
       >
         マイページ

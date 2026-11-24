@@ -18,7 +18,6 @@ export default function PostPage() {
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [tagInput, setTagInput] = useState("");
-
   const [category, setCategory] = useState("動画");
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
@@ -81,7 +80,6 @@ export default function PostPage() {
       return;
     }
 
-    // 空白・読点・カンマでタグを分割
     const finalTags = [
       ...new Set(
         tagInput
@@ -91,7 +89,6 @@ export default function PostPage() {
       ),
     ];
 
-    // 各タグの先頭に # を付ける
     const formattedTags = finalTags
       .map((tag) => `#${tag}`)
       .join(",");
@@ -106,7 +103,6 @@ export default function PostPage() {
         category,
       });
 
-      // 選択したタブに投稿を保存
       if (selectedPlaylistId) {
         await addPostToPlaylist(
           newPost.id,
@@ -131,16 +127,22 @@ export default function PostPage() {
     }
   }
 
+  const inputClass =
+    "w-full rounded-xl border border-[#666666] bg-[#505050] px-4 py-3 font-semibold text-[#EEEEEE] outline-none transition placeholder:text-[#AAAAAA] focus:border-[#AAAAAA] focus:ring-2 focus:ring-[#777777]";
+
+  const labelClass =
+    "mb-2 block font-extrabold text-[#EEEEEE]";
+
   return (
-    <main className="min-h-screen bg-slate-100 px-4 py-10">
-      <div className="mx-auto max-w-xl rounded-2xl bg-white p-7 shadow-lg">
+    <main className="min-h-screen bg-[#303030] px-4 py-10 font-sans">
+      <div className="mx-auto max-w-xl rounded-xl border border-[#555555] bg-[#424242] p-7 shadow-lg">
 
         <div className="mb-7">
-          <h1 className="text-3xl font-extrabold text-slate-950">
+          <h1 className="text-3xl font-extrabold text-[#EEEEEE]">
             ＋ 新しい投稿
           </h1>
 
-          <p className="mt-2 font-semibold text-slate-600">
+          <p className="mt-2 font-semibold text-[#BBBBBB]">
             URLを登録してURLinkに保存します
           </p>
         </div>
@@ -149,7 +151,7 @@ export default function PostPage() {
 
           {/* URL */}
           <div>
-            <label className="mb-2 block font-extrabold text-slate-900">
+            <label className={labelClass}>
               URL
             </label>
 
@@ -159,13 +161,13 @@ export default function PostPage() {
               onChange={(event) => setUrl(event.target.value)}
               placeholder="https://..."
               required
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+              className={inputClass}
             />
           </div>
 
           {/* タイトル */}
           <div>
-            <label className="mb-2 block font-extrabold text-slate-900">
+            <label className={labelClass}>
               タイトル
             </label>
 
@@ -175,13 +177,13 @@ export default function PostPage() {
               onChange={(event) => setTitle(event.target.value)}
               placeholder="タイトルを入力"
               required
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+              className={inputClass}
             />
           </div>
 
           {/* タグ */}
           <div>
-            <label className="mb-2 block font-extrabold text-slate-900">
+            <label className={labelClass}>
               タグ
             </label>
 
@@ -189,11 +191,11 @@ export default function PostPage() {
               type="text"
               value={tagInput}
               onChange={(event) => setTagInput(event.target.value)}
-              placeholder="例：モンスト 攻略 ガチャ"
-              className="w-full rounded-xl border border-slate-300 px-4 py-3 outline-none transition focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+              placeholder="例：獨協大学 経済学部 4年生"
+              className={inputClass}
             />
 
-            <p className="mt-2 text-sm font-semibold text-slate-500">
+            <p className="mt-2 text-sm font-semibold leading-6 text-[#BBBBBB]">
               半角スペース・全角スペース・「、」「,」で区切ると複数のタグを登録できます。
               投稿すると各タグの先頭に # が付きます。
             </p>
@@ -201,14 +203,14 @@ export default function PostPage() {
 
           {/* カテゴリー */}
           <div>
-            <label className="mb-2 block font-extrabold text-slate-900">
+            <label className={labelClass}>
               カテゴリー
             </label>
 
             <select
               value={category}
               onChange={(event) => setCategory(event.target.value)}
-              className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:ring-2 focus:ring-blue-100"
+              className={`${inputClass} cursor-pointer`}
             >
               <option value="動画">動画</option>
               <option value="ショート">ショート</option>
@@ -221,12 +223,12 @@ export default function PostPage() {
           </div>
 
           {/* マイリスト */}
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-5">
-            <label className="block font-extrabold text-slate-950">
+          <div className="rounded-xl border border-[#555555] bg-[#383838] p-5">
+            <label className="block font-extrabold text-[#EEEEEE]">
               保存するタブ
             </label>
 
-            <p className="mt-1 text-sm font-semibold text-slate-600">
+            <p className="mt-1 text-sm font-semibold leading-6 text-[#BBBBBB]">
               アニメ・ゲーム・音楽など、
               自分で作ったタブを選べます。
             </p>
@@ -236,7 +238,7 @@ export default function PostPage() {
               onChange={(event) =>
                 setSelectedPlaylistId(event.target.value)
               }
-              className="mt-4 w-full rounded-xl border border-slate-300 bg-white px-4 py-3 font-bold text-slate-900 outline-none focus:ring-2 focus:ring-blue-100"
+              className={`${inputClass} mt-4 cursor-pointer`}
             >
               <option value="">タブを選択しない</option>
 
@@ -247,8 +249,8 @@ export default function PostPage() {
               ))}
             </select>
 
-            <div className="mt-5 border-t border-slate-200 pt-5">
-              <p className="mb-2 text-sm font-extrabold text-slate-800">
+            <div className="mt-5 border-t border-[#555555] pt-5">
+              <p className="mb-2 text-sm font-extrabold text-[#EEEEEE]">
                 ＋ 新しいタブを作る
               </p>
 
@@ -260,14 +262,14 @@ export default function PostPage() {
                     setNewPlaylistName(event.target.value)
                   }
                   placeholder="例：アニメ"
-                  className="min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 outline-none focus:ring-2 focus:ring-blue-100 placeholder:text-gray-500"
+                  className={`min-w-0 flex-1 ${inputClass}`}
                 />
 
                 <button
                   type="button"
                   onClick={handleCreatePlaylist}
                   disabled={creatingPlaylist}
-                  className="rounded-xl bg-slate-900 px-5 py-3 font-extrabold text-white transition hover:bg-slate-700 disabled:opacity-50"
+                  className="rounded-xl bg-[#606060] px-5 py-3 font-extrabold text-white transition hover:bg-[#707070] disabled:opacity-50"
                 >
                   {creatingPlaylist ? "作成中..." : "作成"}
                 </button>
@@ -279,7 +281,7 @@ export default function PostPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-xl bg-green-500 px-5 py-4 text-lg font-extrabold text-white transition hover:bg-green-600 disabled:cursor-not-allowed disabled:opacity-50"
+            className="w-full rounded-xl bg-[#606060] px-5 py-4 text-lg font-extrabold text-white transition hover:bg-[#707070] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading ? "投稿中..." : "投稿する"}
           </button>
