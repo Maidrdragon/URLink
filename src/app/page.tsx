@@ -106,6 +106,22 @@ function parseTags(tag: string): string[] {
   ];
 }
 
+// 投稿日から年月のキーを作る
+function getMonthKey(timestamp: number): string {
+  const date = new Date(timestamp);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+
+  return `${year}-${month}`;
+}
+
+// 年月キーを表示用に変換
+function formatMonthLabel(monthKey: string): string {
+  const [year, month] = monthKey.split("-");
+
+  return `${year}年${Number(month)}月`;
+}
+
 export default function Home() {
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -116,6 +132,7 @@ export default function Home() {
   const [searchWord, setSearchWord] = useState("");
   const [searchKeywords, setSearchKeywords] = useState<string[]>([]);
   const [selectedOrder, setSelectedOrder] = useState<SortOrder>("date");
+  const [selectedMonth, setSelectedMonth] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -283,12 +300,28 @@ export default function Home() {
     };
   }, [selectedPlaylistId]);
 
-  // 検索と表示順を反映
+  // 投稿に存在する年月を取得
+  const availableMonths = useMemo(() => {
+    const months = [
+      ...new Set(posts.map((post) => getMonthKey(post.createdAt))),
+    ];
+
+    return months.sort((a, b) => b.localeCompare(a));
+  }, [posts]);
+
+  // 検索・年月・プレイリストを反映
   const visiblePosts = useMemo(() => {
     const filtered = posts.filter((post) => {
       if (
         selectedPlaylistId !== "all" &&
         !playlistPostIds.includes(post.id)
+      ) {
+        return false;
+      }
+
+      if (
+        selectedMonth !== "all" &&
+        getMonthKey(post.createdAt) !== selectedMonth
       ) {
         return false;
       }
@@ -341,6 +374,7 @@ export default function Home() {
     selectedPlaylistId,
     searchKeywords,
     selectedOrder,
+    selectedMonth,
   ]);
 
   // 検索処理
@@ -445,17 +479,60 @@ export default function Home() {
         {/* メイン画面 */}
         <main className="min-w-0 flex-1">
           <section className="mb-10">
-            <div className="mb-6 flex flex-wrap items-center gap-3">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
               <h1 className="text-2xl font-extrabold text-white">
                 {searchWord
                   ? `「${searchWord}」の投稿検索結果`
                   : "新着投稿"}
               </h1>
+
+              {/* 年月別検索 */}
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="month-filter"
+                  className="flex items-center gap-2 text-sm font-bold text-[#DDDDDD]"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    className="h-4 w-4"
+                  >
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M16 3v4M8 3v4M3 11h18" />
+                  </svg>
+                  投稿日
+                </label>
+
+                <select
+                  id="month-filter"
+                  value={selectedMonth}
+                  onChange={(event) => setSelectedMonth(event.target.value)}
+                  className="rounded-xl border border-[#666666] bg-[#505050] px-3 py-2 text-sm font-bold text-white outline-none transition hover:bg-[#606060] focus:ring-2 focus:ring-[#999999]"
+                >
+                  <option value="all">すべての年月</option>
+
+                  {availableMonths.map((month) => (
+                    <option key={month} value={month}>
+                      {formatMonthLabel(month)}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <p className="mb-6 font-semibold text-[#DDDDDD]">
               URLinkに登録されたURLを、タイトル・タグ・カテゴリーから探せます。
             </p>
+
+            {selectedMonth !== "all" && (
+              <p className="mb-4 text-sm font-semibold text-[#DDDDDD]">
+                {formatMonthLabel(selectedMonth)}の投稿：
+                {visiblePosts.length}件
+              </p>
+            )}
 
             {loading && (
               <p className="py-12 text-center font-bold text-[#DDDDDD]">
@@ -471,13 +548,13 @@ export default function Home() {
 
             {!loading && !error && visiblePosts.length === 0 && (
               <div className="rounded-2xl border border-[#555555] bg-[#424242] p-10 text-center font-bold text-[#DDDDDD]">
-                {searchWord
+                {searchWord || selectedMonth !== "all"
                   ? "条件に合う投稿が見つかりませんでした。"
                   : "表示できる投稿がありません。URLを投稿してみましょう。"}
               </div>
             )}
 
-            {/* 投稿カード一覧：元のサイズと列数を維持 */}
+            {/* 投稿カード一覧 */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {visiblePosts.map((post) => {
                 const thumbnail = getYouTubeThumbnail(post.url);
@@ -559,6 +636,38 @@ export default function Home() {
                           <p className="truncate text-xs font-bold text-[#DDDDDD]">
                             投稿者：{post.userName}
                           </p>
+                        </div>
+
+                        {/* 投稿日時 */}
+                        <div className="mt-2 flex items-center gap-1.5 text-xs font-semibold text-[#BBBBBB]">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            className="h-3.5 w-3.5 flex-shrink-0"
+                          >
+                            <rect
+                              x="3"
+                              y="5"
+                              width="18"
+                              height="16"
+                              rx="2"
+                            />
+                            <path d="M16 3v4M8 3v4M3 11h18" />
+                          </svg>
+
+                          <span>
+                            {new Date(post.createdAt).toLocaleDateString(
+                              "ja-JP",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
                         </div>
 
                         <p className="mt-2 text-xs font-semibold text-[#DDDDDD]">
