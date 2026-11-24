@@ -381,7 +381,7 @@ export default function Home() {
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0F0F0F] text-white">
+    <div className="relative min-h-screen overflow-hidden bg-[#303030] text-white">
       {/* 背景ロゴ */}
       <div
         className="pointer-events-none fixed inset-0 z-0 flex items-center justify-center"
@@ -397,7 +397,7 @@ export default function Home() {
       <div className="relative z-10 mx-auto flex max-w-[1700px] flex-col gap-6 px-6 py-8 sm:flex-row">
         {/* 左側サイドバー */}
         <aside className="w-full flex-shrink-0 sm:w-60">
-          <div className="rounded-2xl border border-[#303030] bg-[#181818] p-4 shadow-sm sm:sticky sm:top-6">
+          <div className="rounded-2xl border border-[#555555] bg-[#424242] p-4 shadow-sm sm:sticky sm:top-6">
             <Sidebar />
 
             <h2 className="mb-4 text-lg font-extrabold text-white">
@@ -410,8 +410,8 @@ export default function Home() {
                 onClick={() => setSelectedPlaylistId("all")}
                 className={`w-full rounded-xl px-4 py-3 text-left font-extrabold transition ${
                   selectedPlaylistId === "all"
-                    ? "bg-[#272727] text-white"
-                    : "text-[#AAAAAA] hover:bg-[#272727] hover:text-white"
+                    ? "bg-[#505050] text-white"
+                    : "text-[#DDDDDD] hover:bg-[#505050] hover:text-white"
                 }`}
               >
                 すべて
@@ -424,8 +424,8 @@ export default function Home() {
                   onClick={() => setSelectedPlaylistId(playlist.id)}
                   className={`w-full rounded-xl px-4 py-3 text-left font-bold transition ${
                     selectedPlaylistId === playlist.id
-                      ? "bg-[#272727] text-white"
-                      : "text-[#AAAAAA] hover:bg-[#272727] hover:text-white"
+                      ? "bg-[#505050] text-white"
+                      : "text-[#DDDDDD] hover:bg-[#505050] hover:text-white"
                   }`}
                 >
                   {playlist.name}
@@ -435,7 +435,7 @@ export default function Home() {
 
             <a
               href="/post"
-              className="mt-5 block rounded-xl border border-[#444444] px-4 py-3 text-center font-extrabold text-white transition hover:bg-[#272727]"
+              className="mt-5 block rounded-xl border border-[#666666] px-4 py-3 text-center font-extrabold text-white transition hover:bg-[#505050]"
             >
               ＋ 投稿する
             </a>
@@ -453,24 +453,24 @@ export default function Home() {
               </h1>
             </div>
 
-            <p className="mb-6 font-semibold text-[#AAAAAA]">
+            <p className="mb-6 font-semibold text-[#DDDDDD]">
               URLinkに登録されたURLを、タイトル・タグ・カテゴリーから探せます。
             </p>
 
             {loading && (
-              <p className="py-12 text-center font-bold text-[#AAAAAA]">
+              <p className="py-12 text-center font-bold text-[#DDDDDD]">
                 投稿を読み込み中...
               </p>
             )}
 
             {error && (
-              <p className="mb-6 rounded-xl border border-[#444444] bg-[#272727] p-4 font-bold text-white">
+              <p className="mb-6 rounded-xl border border-[#666666] bg-[#505050] p-4 font-bold text-white">
                 {error}
               </p>
             )}
 
             {!loading && !error && visiblePosts.length === 0 && (
-              <div className="rounded-2xl border border-[#303030] bg-[#181818] p-10 text-center font-bold text-[#AAAAAA]">
+              <div className="rounded-2xl border border-[#555555] bg-[#424242] p-10 text-center font-bold text-[#DDDDDD]">
                 {searchWord
                   ? "条件に合う投稿が見つかりませんでした。"
                   : "表示できる投稿がありません。URLを投稿してみましょう。"}
@@ -499,7 +499,7 @@ export default function Home() {
                 return (
                   <article
                     key={post.id}
-                    className="relative overflow-visible rounded-2xl border border-[#303030] bg-[#181818] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#444444] hover:shadow-lg"
+                    className="relative overflow-visible rounded-2xl border border-[#555555] bg-[#424242] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#777777] hover:shadow-lg"
                   >
                     {/* 投稿内容 */}
                     <a
@@ -512,7 +512,7 @@ export default function Home() {
                         <img
                           src={thumbnail}
                           alt={post.title}
-                          className="aspect-video w-full bg-[#272727] object-cover"
+                          className="aspect-video w-full bg-[#505050] object-cover"
                         />
                       ) : (
                         <div className="flex aspect-video w-full items-center justify-center bg-white p-6">
@@ -537,10 +537,10 @@ export default function Home() {
                             <img
                               src={avatarUrls[post.userId]}
                               alt="投稿者のプロフィール画像"
-                              className="h-7 w-7 flex-shrink-0 rounded-full border border-[#444444] object-cover"
+                              className="h-7 w-7 flex-shrink-0 rounded-full border border-[#666666] object-cover"
                             />
                           ) : (
-                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#303030] text-[#AAAAAA]">
+                            <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-[#606060] text-[#DDDDDD]">
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
@@ -556,12 +556,12 @@ export default function Home() {
                             </div>
                           )}
 
-                          <p className="truncate text-xs font-bold text-[#AAAAAA]">
+                          <p className="truncate text-xs font-bold text-[#DDDDDD]">
                             投稿者：{post.userName}
                           </p>
                         </div>
 
-                        <p className="mt-2 text-xs font-semibold text-[#AAAAAA]">
+                        <p className="mt-2 text-xs font-semibold text-[#DDDDDD]">
                           {post.category}
                         </p>
 
@@ -571,7 +571,7 @@ export default function Home() {
                             {parseTags(post.tag).map((tag, index) => (
                               <span
                                 key={`${tag}-${index}`}
-                                className="rounded-full bg-[#303030] px-3 py-1 text-xs font-bold text-[#DDDDDD]"
+                                className="rounded-full bg-[#606060] px-3 py-1 text-xs font-bold text-white"
                               >
                                 #{tag}
                               </span>
@@ -579,7 +579,7 @@ export default function Home() {
                           </div>
                         )}
 
-                        <p className="mt-2 truncate text-xs font-semibold text-[#888888]">
+                        <p className="mt-2 truncate text-xs font-semibold text-[#BBBBBB]">
                           {post.url}
                         </p>
                       </div>
