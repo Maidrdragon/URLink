@@ -13,8 +13,8 @@ export default function Sidebar() {
         href="/"
         className={`block rounded-xl px-4 py-3 font-extrabold transition ${
           pathname === "/"
-            ? "bg-slate-900 text-white"
-            : "text-slate-800 hover:bg-slate-100"
+            ? "bg-[#383838] text-white"
+            : "text-[#BBBBBB] hover:bg-[#292929] hover:text-white"
         }`}
       >
         ホーム
@@ -24,8 +24,8 @@ export default function Sidebar() {
         href="/mypage"
         className={`block rounded-xl px-4 py-3 font-extrabold transition ${
           pathname === "/mypage"
-            ? "bg-slate-900 text-white"
-            : "text-slate-800 hover:bg-slate-100"
+            ? "bg-[#383838] text-white"
+            : "text-[#BBBBBB] hover:bg-[#292929] hover:text-white"
         }`}
       >
         マイページ

@@ -21,7 +21,6 @@ export default function Header({ onSearch }: HeaderProps) {
   const [sortOrder, setSortOrder] = useState<SortOrder>("relevance");
   const [avatarUrl, setAvatarUrl] = useState("");
 
-  // ホーム画面かどうかを判定
   const isHome = pathname === "/";
 
   useEffect(() => {
@@ -49,7 +48,9 @@ export default function Header({ onSearch }: HeaderProps) {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAvatarUrl(session?.user?.user_metadata?.avatar_url || "");
+      if (active) {
+        setAvatarUrl(session?.user?.user_metadata?.avatar_url || "");
+      }
     });
 
     return () => {
@@ -86,7 +87,13 @@ export default function Header({ onSearch }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-50 bg-gradient-to-r from-blue-500 via-cyan-200 via-teal-200 via-lime-100 via-amber-300 to-orange-300 shadow-sm">
+    <header
+      className="sticky top-0 z-50 border-b border-white/30 shadow-md"
+      style={{
+        background:
+          "linear-gradient(to right, #3B82F6, #67E8F9, #5EEAD4, #D9F99D, #FCD34D, #FB923C)",
+      }}
+    >
       <div className="mx-auto flex min-h-16 max-w-[1700px] items-center gap-4 px-6 py-3">
 
         {/* ロゴ */}
@@ -116,12 +123,12 @@ export default function Header({ onSearch }: HeaderProps) {
               value={keyword}
               onChange={(event) => setKeyword(event.target.value)}
               placeholder="動画や投稿を検索..."
-              className="min-w-0 flex-1 rounded-xl bg-white px-4 py-2 text-slate-800 outline-none focus:ring-2 focus:ring-purple-200"
+              className="min-w-0 flex-1 rounded-full border border-[#383838] bg-[#212121] px-5 py-2.5 text-white placeholder:text-[#AAAAAA] outline-none transition focus:border-[#666666]"
             />
 
             <button
               type="submit"
-              className="rounded-xl bg-white px-4 py-2 font-bold text-purple-700 hover:bg-purple-50"
+              className="rounded-full bg-[#272727] px-5 py-2.5 font-bold text-white transition hover:bg-[#3A3A3A]"
             >
               検索
             </button>
@@ -133,7 +140,7 @@ export default function Header({ onSearch }: HeaderProps) {
           href="/account"
           aria-label="アカウント"
           title="アカウント"
-          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-white/20 text-white hover:bg-white/30"
+          className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[#444444] bg-[#272727] text-white transition hover:bg-[#3A3A3A]"
         >
           {avatarUrl ? (
             <img
