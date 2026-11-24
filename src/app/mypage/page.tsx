@@ -5,25 +5,30 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import Sidebar from "../../../components/Sidebar";
 import PostActionsMenu from "../../../components/PostActionsMenu";
+
 import {
   type FavoriteItem,
   getFavorites,
   removeFavorite,
   migrateLocalFavorites,
 } from "../../lib/favorites";
+
 import {
   type PostItem,
   getMyPosts,
   getPosts,
   deletePost,
 } from "../../lib/posts";
+
 import {
   type Playlist,
   getPlaylists,
   getPlaylistPostIds,
   createPlaylist,
 } from "../../lib/playlists";
+
 import { createClient } from "../../lib/supabase/client";
 
 function getThumbnail(url: string): string | null {
@@ -132,6 +137,7 @@ export default function MyPage() {
     async function initialize() {
       try {
         const supabase = createClient();
+
         const {
           data: { user },
           error,
@@ -318,7 +324,7 @@ export default function MyPage() {
     return (
       <article
         key={post.id}
-        className="relative overflow-hidden rounded-xl border border-[#555555] bg-[#424242] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#777777] hover:shadow-md"
+        className="relative overflow-hidden rounded-sm border border-[#555555] bg-[#424242] shadow-sm transition duration-300 hover:-translate-y-1 hover:border-[#777777] hover:shadow-md"
       >
         <a
           href={post.url}
@@ -330,10 +336,10 @@ export default function MyPage() {
             <img
               src={thumbnail}
               alt={post.title}
-              className="aspect-video w-full rounded-t-xl bg-[#505050] object-cover"
+              className="aspect-video w-full rounded-t-sm bg-[#505050] object-cover"
             />
           ) : (
-            <div className="flex aspect-video items-center justify-center rounded-t-xl bg-[#505050] p-6">
+            <div className="flex aspect-video items-center justify-center rounded-t-sm bg-[#505050] p-6">
               <img
                 src="/logonew.PNG"
                 alt="URLink"
@@ -397,179 +403,191 @@ export default function MyPage() {
 
   return (
     <div className="min-h-screen bg-[#303030]">
-      <main className="mx-auto max-w-[1700px] px-6 py-8">
-        <h1 className="mb-7 text-3xl font-extrabold text-[#EEEEEE]">
-          マイページ
-        </h1>
+      <div className="mx-auto flex max-w-[1700px] flex-col gap-6 px-6 py-8 lg:flex-row">
 
-        <div className="mb-8 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => setActiveTab("posts")}
-            className={`rounded-xl px-5 py-3 font-extrabold transition ${
-              activeTab === "posts"
-                ? "bg-[#505050] text-white"
-                : "border border-[#555555] bg-[#424242] text-[#DDDDDD] hover:bg-[#505050]"
-            }`}
-          >
-            自分の投稿 ({posts.length})
-          </button>
+        {/* 左側サイドバー */}
+        <aside className="w-full shrink-0 lg:w-60">
+          <Sidebar />
+        </aside>
 
-          <button
-            type="button"
-            onClick={() => setActiveTab("favorites")}
-            className={`rounded-xl px-5 py-3 font-extrabold transition ${
-              activeTab === "favorites"
-                ? "bg-[#505050] text-white"
-                : "border border-[#555555] bg-[#424242] text-[#DDDDDD] hover:bg-[#505050]"
-            }`}
-          >
-            お気に入り ({favorites.length})
-          </button>
+        {/* マイページのメイン部分 */}
+        <main className="min-w-0 flex-1">
+          <h1 className="mb-7 text-3xl font-extrabold text-[#EEEEEE]">
+            マイページ
+          </h1>
 
-          {playlists.map((playlist) => (
+          <div className="mb-8 flex flex-wrap items-center gap-3">
             <button
-              key={playlist.id}
               type="button"
-              onClick={() => setActiveTab(playlist.id)}
-              className={`max-w-48 truncate rounded-xl px-5 py-3 font-extrabold transition ${
-                activeTab === playlist.id
+              onClick={() => setActiveTab("posts")}
+              className={`rounded-xl px-5 py-3 font-extrabold transition ${
+                activeTab === "posts"
                   ? "bg-[#505050] text-white"
                   : "border border-[#555555] bg-[#424242] text-[#DDDDDD] hover:bg-[#505050]"
               }`}
-              title={playlist.name}
             >
-              {playlist.name}
+              自分の投稿 ({posts.length})
             </button>
-          ))}
 
-          <button
-            type="button"
-            onClick={openCreatePlaylist}
-            className="rounded-xl border-2 border-dashed border-[#777777] bg-[#424242] px-5 py-3 font-extrabold text-[#DDDDDD] transition hover:border-[#AAAAAA] hover:bg-[#505050]"
-          >
-            ＋ プレイリスト作成
-          </button>
-        </div>
+            <button
+              type="button"
+              onClick={() => setActiveTab("favorites")}
+              className={`rounded-xl px-5 py-3 font-extrabold transition ${
+                activeTab === "favorites"
+                  ? "bg-[#505050] text-white"
+                  : "border border-[#555555] bg-[#424242] text-[#DDDDDD] hover:bg-[#505050]"
+              }`}
+            >
+              お気に入り ({favorites.length})
+            </button>
 
-        {activeTab === "posts" && (
-          <section>
-            {posts.length === 0 ? (
-              <div className="rounded-xl border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
-                <p className="font-bold text-[#DDDDDD]">
-                  まだ投稿がありません。
-                </p>
-                <Link
-                  href="/post"
-                  className="mt-5 inline-block font-bold text-[#EEEEEE] hover:underline"
-                >
-                  ＋ 投稿する
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {posts.map(renderPostCard)}
-              </div>
-            )}
-          </section>
-        )}
+            {playlists.map((playlist) => (
+              <button
+                key={playlist.id}
+                type="button"
+                onClick={() => setActiveTab(playlist.id)}
+                className={`max-w-48 truncate rounded-xl px-5 py-3 font-extrabold transition ${
+                  activeTab === playlist.id
+                    ? "bg-[#505050] text-white"
+                    : "border border-[#555555] bg-[#424242] text-[#DDDDDD] hover:bg-[#505050]"
+                }`}
+                title={playlist.name}
+              >
+                {playlist.name}
+              </button>
+            ))}
 
-        {activeTab === "favorites" && (
-          <section>
-            {favorites.length === 0 ? (
-              <div className="rounded-xl border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
-                <p className="font-bold text-[#DDDDDD]">
-                  まだお気に入りがありません。
-                </p>
-                <Link
-                  href="/"
-                  className="mt-5 inline-block font-bold text-[#EEEEEE] hover:underline"
-                >
-                  動画を探す
-                </Link>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {favorites.map((item) => (
-                  <article
-                    key={item.id}
-                    className="overflow-hidden rounded-xl border border-[#555555] bg-[#424242] shadow-sm transition hover:-translate-y-1 hover:border-[#777777] hover:shadow-md"
+            <button
+              type="button"
+              onClick={openCreatePlaylist}
+              className="rounded-xl border-2 border-dashed border-[#777777] bg-[#424242] px-5 py-3 font-extrabold text-[#DDDDDD] transition hover:border-[#AAAAAA] hover:bg-[#505050]"
+            >
+              ＋ プレイリスト作成
+            </button>
+          </div>
+
+          {activeTab === "posts" && (
+            <section>
+              {posts.length === 0 ? (
+                <div className="rounded-sm border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
+                  <p className="font-bold text-[#DDDDDD]">
+                    まだ投稿がありません。
+                  </p>
+                  <Link
+                    href="/post"
+                    className="mt-5 inline-block font-bold text-[#EEEEEE] hover:underline"
                   >
-                    <a
-                      href={item.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="block"
+                    ＋ 投稿する
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {posts.map(renderPostCard)}
+                </div>
+              )}
+            </section>
+          )}
+
+          {activeTab === "favorites" && (
+            <section>
+              {favorites.length === 0 ? (
+                <div className="rounded-sm border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
+                  <p className="font-bold text-[#DDDDDD]">
+                    まだお気に入りがありません。
+                  </p>
+                  <Link
+                    href="/"
+                    className="mt-5 inline-block font-bold text-[#EEEEEE] hover:underline"
+                  >
+                    動画を探す
+                  </Link>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {favorites.map((item) => (
+                    <article
+                      key={item.id}
+                      className="overflow-hidden rounded-sm border border-[#555555] bg-[#424242] shadow-sm transition hover:-translate-y-1 hover:border-[#777777] hover:shadow-md"
                     >
-                      {item.thumbnail ? (
-                        <img
-                          src={item.thumbnail}
-                          alt={item.title}
-                          className="aspect-video w-full rounded-t-xl bg-[#505050] object-cover"
-                        />
-                      ) : (
-                        <div className="flex aspect-video items-center justify-center rounded-t-xl bg-[#505050] p-6">
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block"
+                      >
+                        {item.thumbnail ? (
                           <img
-                            src="/logonew.PNG"
-                            alt="URLink"
-                            className="h-full w-full object-contain"
+                            src={item.thumbnail}
+                            alt={item.title}
+                            className="aspect-video w-full rounded-t-sm bg-[#505050] object-cover"
                           />
-                        </div>
-                      )}
-                    </a>
+                        ) : (
+                          <div className="flex aspect-video items-center justify-center rounded-t-sm bg-[#505050] p-6">
+                            <img
+                              src="/logonew.PNG"
+                              alt="URLink"
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                        )}
+                      </a>
 
-                    <div className="p-3">
-                      <h2
-                        className="truncate text-sm font-extrabold text-[#EEEEEE]"
-                        title={item.title}
-                      >
-                        {item.title}
-                      </h2>
+                      <div className="p-3">
+                        <h2
+                          className="truncate text-sm font-extrabold text-[#EEEEEE]"
+                          title={item.title}
+                        >
+                          {item.title}
+                        </h2>
 
-                      <p className="mt-2 truncate text-xs font-semibold text-[#BBBBBB]">
-                        {item.creator}
-                      </p>
+                        <p className="mt-2 truncate text-xs font-semibold text-[#BBBBBB]">
+                          {item.creator}
+                        </p>
 
-                      <button
-                        type="button"
-                        onClick={() => void handleRemoveFavorite(item.id)}
-                        className="mt-3 w-full rounded-lg bg-[#606060] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#707070]"
-                      >
-                        お気に入りから削除
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
-          </section>
-        )}
+                        <button
+                          type="button"
+                          onClick={() => void handleRemoveFavorite(item.id)}
+                          className="mt-3 w-full rounded-lg bg-[#606060] px-3 py-2 text-sm font-bold text-white transition hover:bg-[#707070]"
+                        >
+                          お気に入りから削除
+                        </button>
+                      </div>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
 
-        {selectedPlaylist && (
-          <section>
-            {playlistPosts.length === 0 ? (
-              <div className="rounded-xl border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
-                <p className="font-bold text-[#DDDDDD]">
-                  このプレイリストには、まだ投稿がありません。
-                </p>
-                <p className="mt-2 text-sm text-[#BBBBBB]">
-                  ホーム画面の投稿メニューから追加できます。
-                </p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {playlistPosts.map(renderPostCard)}
-              </div>
-            )}
-          </section>
-        )}
-      </main>
+          {selectedPlaylist && (
+            <section>
+              {playlistPosts.length === 0 ? (
+                <div className="rounded-sm border border-[#555555] bg-[#424242] p-10 text-center shadow-sm">
+                  <p className="font-bold text-[#DDDDDD]">
+                    このプレイリストには、まだ投稿がありません。
+                  </p>
+                  <p className="mt-2 text-sm text-[#BBBBBB]">
+                    ホーム画面の投稿メニューから追加できます。
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {playlistPosts.map(renderPostCard)}
+                </div>
+              )}
+            </section>
+          )}
+        </main>
+      </div>
 
       {showCreatePlaylist && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          className="fixed inset-0 z-[99999] flex items-center justify-center bg-black/60 p-4"
           onMouseDown={(event) => {
-            if (event.target === event.currentTarget && !creatingPlaylist) {
+            if (
+              event.target === event.currentTarget &&
+              !creatingPlaylist
+            ) {
               setShowCreatePlaylist(false);
             }
           }}
