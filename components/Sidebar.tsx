@@ -18,7 +18,7 @@ export default function Sidebar() {
     const name = playlistName.trim();
 
     if (!name) {
-      alert("プレイリスト名を入力してください。");
+      alert("マイリスト名を入力してください。");
       return;
     }
 
@@ -33,14 +33,14 @@ export default function Sidebar() {
       setPlaylistName("");
       setShowCreate(false);
 
-      alert("プレイリストを作成しました！");
+      alert("マイリストを作成しました！");
     } catch (error) {
-      console.error("プレイリスト作成エラー:", error);
+      console.error("マイリスト作成エラー:", error);
 
       alert(
         error instanceof Error
           ? error.message
-          : "プレイリストの作成に失敗しました。"
+          : "マイリストの作成に失敗しました。"
       );
     } finally {
       setCreating(false);
@@ -94,7 +94,7 @@ export default function Sidebar() {
             }}
           >
             <div
-              className="w-full max-w-md rounded-2xl border border-[#666666] bg-[#424242] p-6 shadow-2xl"
+              className="w-full max-w-md rounded-sm border border-[#666666] bg-[#424242] p-6 shadow-2xl"
               onClick={(event) => event.stopPropagation()}
             >
               <h2 className="mb-5 text-xl font-extrabold text-[#EEEEEE]">
@@ -126,7 +126,7 @@ export default function Sidebar() {
                 placeholder="例：アニメ、ゲーム、音楽"
                 maxLength={30}
                 autoFocus
-                className="w-full rounded-xl border border-[#666666] bg-[#505050] px-4 py-3 font-semibold text-[#EEEEEE] outline-none placeholder:text-[#AAAAAA] focus:border-[#AAAAAA] focus:ring-2 focus:ring-[#777777]"
+                className="w-full rounded-sm border border-[#666666] bg-[#505050] px-4 py-3 font-semibold text-[#EEEEEE] outline-none placeholder:text-[#AAAAAA] focus:border-[#AAAAAA] focus:ring-2 focus:ring-[#777777]"
               />
 
               <div className="mt-6 flex justify-end gap-3">
@@ -134,7 +134,7 @@ export default function Sidebar() {
                   type="button"
                   disabled={creating}
                   onClick={() => setShowCreate(false)}
-                  className="rounded-xl bg-[#505050] px-5 py-3 font-bold text-[#EEEEEE] transition hover:bg-[#606060] disabled:opacity-50"
+                  className="rounded-sm bg-[#505050] px-5 py-3 font-bold text-[#EEEEEE] transition hover:bg-[#606060] disabled:opacity-50"
                 >
                   キャンセル
                 </button>
@@ -143,7 +143,7 @@ export default function Sidebar() {
                   type="button"
                   disabled={creating}
                   onClick={() => void handleCreatePlaylist()}
-                  className="rounded-xl bg-[#707070] px-5 py-3 font-bold text-white transition hover:bg-[#808080] disabled:opacity-50"
+                  className="rounded-sm bg-[#707070] px-5 py-3 font-bold text-white transition hover:bg-[#808080] disabled:opacity-50"
                 >
                   {creating ? "作成中..." : "作成する"}
                 </button>
